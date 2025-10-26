@@ -9,7 +9,7 @@
 </p>
 
 
-![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=FILE+SHARING+!;CREATED+BY+P_WORLD+DEVELOPER!;A+ADVANCE+BOT+WITH+COOL+FEATURE!)
+![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=FILE+SHARING+!;CREATED+BY+WANGLING+DEVELOPER!;A+ADVANCE+BOT+WITH+COOL+FEATURE!)
 </p>
 
  ━━━━━━━━━━━━━━━━━
@@ -47,7 +47,7 @@
 * `DATABASE_URL` Your mongo db url
 * `DATABASE_NAME` Your mongo db session name
 * `ADMINS` Optional: A space separated list of user_ids of Admins, they can only create links
-* `START_MESSAGE` Optional: start message of bot, use HTML and <a href='https://github.com/million-hua/sab-ki-maa-chuud-ne-wala/blob/Shortner/README.md'>fillings</a>
+* `START_MESSAGE` Optional: start message of bot, use HTML and <a href='https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala/blob/Shortner/README.md'>fillings</a>
 * `PROTECT_CONTENT` Optional: True if you need to prevent files from forwarding
 
 ### Token Variables
@@ -113,25 +113,25 @@
     ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʜᴇʀᴏᴋᴜ 」─
 </h3>
 
-<p align="center"><a href="https://heroku.com/deploy?template=https://github.com/million-hua/sab-ki-maa-chuud-ne-wala">
+<p align="center"><a href="https://heroku.com/deploy?template=https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy On Heroku">
 </a></p>
 <h3 align="center">
     ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ᴋᴏʏᴇʙ 」─
 </h3>
-<p align="center"><a href="https://app.koyeb.com/deploy?type=git&repository=https://github.com/million-hua/sab-ki-maa-chuud-ne-wala">
+<p align="center"><a href="https://app.koyeb.com/deploy?type=git&repository=https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala">
   <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy On Koyeb">
 </a></p>
 <h3 align="center">
     ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʀᴀɪʟᴡᴀʏ 」─
 </h3>
-<p align="center"><a href="https://railway.app/deploy?template=https://github.com/million-hua/sab-ki-maa-chuud-ne-wala">
+<p align="center"><a href="https://railway.app/deploy?template=https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala">
      <img height="45px" src="https://railway.app/button.svg">
 </a></p>
 <h3 align="center">
     ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʀᴇɴᴅᴇʀ 」─
 </h3>
-<p align="center"><a href="https://render.com/deploy?repo=https://github.com/million-hua/sab-ki-maa-chuud-ne-wala">
+<p align="center"><a href="https://render.com/deploy?repo=https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala">
 <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render">
 </a></p>
 <h3 align="center">
@@ -139,7 +139,7 @@
 </h3>
 <p>
 <pre>
-git clone https://github.com/million-hua/sab-ki-maa-chuud-ne-wala
+git clone https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala
 # Install Packages
 pip3 install -U -r requirements.txt
 Edit info.py with variables as given below then run bot
@@ -151,8 +151,8 @@ python3 bot.py
 <h3>「 ᴄʀᴇᴅɪᴛs 」
 </h3>
 
-- <b>[ᴡᴀɴɢ ʟɪɴɢ ʙᴏᴛs](https://t.me/P_world_81)  ➻  [ᴜᴘᴅᴀᴛᴇs](https://t.me/P_world_81) </b>
-- <b>[ᴡᴀɴɢ ʟɪɴɢ](https://github.com/million-hua)  ➻  [sᴏᴍᴇᴛʜɪɴɢ](https://t.me/FILE_SHARINGBOTS/17) </b>
+- <b>[ᴡᴀɴɢ ʟɪɴɢ ʙᴏᴛs](https://t.me/P_world_81)  ➪  [ᴜᴘᴅᴀᴛᴇs](https://t.me/P_world_81) </b>
+- <b>[ᴡᴀɴɢ ʟɪɴɢ](https://github.com/WANGLING-Pro) 
  
 <b>ᴀɴᴅ ᴀʟʟ [ᴛʜᴇ ᴄᴏɴᴛʀɪʙᴜᴛᴏʀs](https://telegram.me/P_world_81) ᴡʜᴏ ʜᴇʟᴩᴇᴅ ɪɴ ᴍᴀᴋɪɴɢ file store ʙᴏᴛ ᴜsᴇꜰᴜʟ & ᴩᴏᴡᴇʀꜰᴜʟ 🖤 </b>
 
