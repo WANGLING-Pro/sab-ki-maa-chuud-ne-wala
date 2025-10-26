@@ -18,7 +18,7 @@
 
 <details><summary><b>📌 ғᴇᴀᴛᴜʀᴇs:</b></summary>
 
-<b>🚀 Key Features:</b>
+<b>🚀 Key Features :-</b>
 
 • <b>Batch & Custom Batch Links:</b> Create links for one or multiple posts easily using <code>/batch</code> & <code>/custom_batch</code>  
 • <b>Link Generator:</b> Instantly generate direct links with <code>/genlink</code>  
@@ -36,7 +36,7 @@
 </details>
 
 
-<details><summary><b> - ᴠᴀʀɪᴀʙʟᴇs :</b></summary>
+<details><summary><b> 🎯 ᴠᴀʀɪᴀʙʟᴇs :-</b></summary>
   
 ## ᴠᴀʀɪᴀʙʟᴇs
 * `API_HASH` Your API Hash from my.telegram.org
