@@ -1,11 +1,11 @@
-# Don't Remove Credit @P_World_18, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @P_World_18, @i_am_nerev_die
+# Ask Doubt on telegram @Upcoming
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by WANGLING-Pro@Github, < https://github.com/WANGLING-Pro >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala/new/Shortner >
 #
 # All rights reserved.
 #
@@ -15,7 +15,7 @@ from os import environ,getenv
 import logging
 from logging.handlers import RotatingFileHandler
 
-#rohit_1888 on Tg
+#I_am_nerev_die on Tg
 #--------------------------------------------
 #Bot token @Botfather
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8154426339:")
