@@ -59,13 +59,6 @@
 ## 𝐶𝑜𝑚𝑚𝑎𝑛𝑑𝑠
 
 ```
-/start - start the bot or get posts
-/batch - create link for more than one posts
-/genlink - create link for one post
-/users - view bot statistics
-/broadcast - broadcast any messages to bot users
-/dbroadcast - broadcast any messages with auto delete.
-/stats - checking your bot uptime
 /start - start the bot or get posts  
 /batch - create link for more than one posts  
 /custom_batch - create custom batch from channel/group  
@@ -83,7 +76,7 @@
 /delchnl - remove a force subscribe channel  
 /listchnl - view all added force subscribe channels  
 /fsub_mode - toggle force subscribe on or off  
-/pbroadcast - pin a broadcast to all user's chat 
+/pbroadcast - pin a broadcast to all user's chat  
 /add_admin - add a new admin  
 /deladmin - remove an admin  
 /admins - list all current admins  
@@ -92,7 +85,7 @@
 /remove_premium - revoke premium from a user  
 /myplan - check your premium status  
 /count - count shortner clicks  
-/delreq - removed users that left chnl and not getting request fsub
+/delreq - remove users that left channel and are not getting request fsub
 ```
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
