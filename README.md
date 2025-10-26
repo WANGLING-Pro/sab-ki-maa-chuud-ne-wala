@@ -1,4 +1,4 @@
-━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━
 
 <h2 align="center">
     ──「 ғɪʟᴇ sᴛᴏʀᴇ ᴘʀᴏ 」──
@@ -12,7 +12,7 @@
 ![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=FILE+SHARING+!;CREATED+BY+WANGLING+DEVELOPER!;A+ADVANCE+BOT+WITH+COOL+FEATURE!)
 </p>
 
- ━━━━━━━━━━━━━━━━━
+ ━━━━━━━━━━━━━━━━━━
 
 
 
