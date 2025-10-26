@@ -47,7 +47,7 @@
 * `DATABASE_URL` Your mongo db url
 * `DATABASE_NAME` Your mongo db session name
 * `ADMINS` Optional: A space separated list of user_ids of Admins, they can only create links
-* `START_MESSAGE` Optional: start message of bot, use HTML and <a href='https://github.com/codeflix-bots/filestore/blob/master/README.md#start_message'>fillings</a>
+* `START_MESSAGE` Optional: start message of bot, use HTML and <a href='https://github.com/million-hua/sab-ki-maa-chuud-ne-wala/blob/Shortner/README.md'>fillings</a>
 * `PROTECT_CONTENT` Optional: True if you need to prevent files from forwarding
 
 ### Token Variables
