@@ -16,9 +16,9 @@
 
 
 
-<details><summary><b>📌 ғᴇᴀᴛᴜʀᴇs:</b></summary>
+<details><summary><b>📌 ғᴇᴀᴛᴜʀᴇs:-</b></summary>
 
-<b>🚀 Key Features :-</b>
+<b>🚀 Key Features :</b>
 
 • <b>Batch & Custom Batch Links:</b> Create links for one or multiple posts easily using <code>/batch</code> & <code>/custom_batch</code>  
 • <b>Link Generator:</b> Instantly generate direct links with <code>/genlink</code>  
