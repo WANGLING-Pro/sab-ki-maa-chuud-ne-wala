@@ -16,7 +16,7 @@
 
 
 
-<details><summary><b>📌 ғᴇᴀᴛᴜʀᴇs:-</b></summary>
+<details><summary><b>📌 ғᴇᴀᴛᴜʀᴇs :-</b></summary>
 
 <b>🚀 Key Features :</b>
 
