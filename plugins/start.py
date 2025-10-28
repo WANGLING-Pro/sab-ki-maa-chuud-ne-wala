@@ -77,24 +77,6 @@ async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     id = message.from_user.id
     is_premium = await is_premium_user(id)
-
-    # ✅ check if /start has an argument (means link se aya hai)
-    if len(message.command) > 1:
-        try:
-            raw_data = message.command[1]
-            if raw_data.startswith("yu3elk") and raw_data.endswith("7"):
-                base64_string = raw_data.replace("yu3elk", "").replace("7", "")
-                import base64
-                decoded = base64.urlsafe_b64decode(base64_string.encode()).decode()
-                # ab yaha tum decoded data se file ya link bhej sakte ho
-                await message.reply(f"✅ Link decoded successfully!\n\nData: `{decoded}`")
-                return
-        except Exception as e:
-            await message.reply(f"❌ Error decoding link:\n`{e}`")
-            return
-
-    # agar normal /start bheja ho to normal reply
-    await message.reply("👋 Welcome! Use /help for more info.")
     
     # Check if user is banned
     banned_users = await db.get_ban_users()
