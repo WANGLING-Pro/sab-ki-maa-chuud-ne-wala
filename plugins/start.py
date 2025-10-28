@@ -38,12 +38,6 @@ async def short_url(client: Client, message: Message, base64_string):
         prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
 
-        return short_link
-
-    except Exception as e:
-        print(f"Error in short_url: {e}")
-        return None
-
         buttons = [
             [
                 InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
@@ -70,7 +64,7 @@ async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     id = message.from_user.id
     is_premium = await is_premium_user(id)
-    
+
     # Check if user is banned
     banned_users = await db.get_ban_users()
     if user_id in banned_users:
@@ -233,6 +227,10 @@ async def start_command(client: Client, message: Message):
 
 
 #=====================================================================================##
+# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
+# Ask Doubt on telegram @CodeflixSupport
+
+
 
 # Create a global dictionary to store chat data
 chat_data_cache = {}
@@ -474,3 +472,5 @@ async def total_verify_count_cmd(client, message: Message):
 async def bcmd(bot: Bot, message: Message):        
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close")]])
     await message.reply(text=CMD_TXT, reply_markup = reply_markup, quote= True)
+
+# ===================================================================================##
