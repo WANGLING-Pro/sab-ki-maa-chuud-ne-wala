@@ -1,7 +1,7 @@
 # Don't Remove Credit @P_World_18, @I_am_Never_die
 # Ask Doubt on telegram @Upcoming
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/WANGLING-Pro >.
+# Copyright (C) 2025 by WANGLING-Pro@Github, < https://github.com/WANGLING-Pro >.
 #
 # This file is part of < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala > project,
 # and is released under the MIT License.
@@ -23,18 +23,7 @@ from config import *
 from helper_func import *
 from database.database import *
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
-#
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
-#
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
-# and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
-#
-# All rights reserved.
-
-#Request force sub mode commad,,,,,,
+# Request force sub mode commad,,,,,,
 @Bot.on_message(filters.command('fsub_mode') & filters.private & admin)
 async def change_force_sub_mode(client: Client, message: Message):
     temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>", quote=True)
@@ -147,7 +136,7 @@ async def add_force_sub(client: Client, message: Message):
   
 # Don't Remove Credit @P_World_18, @I_am_Never_die
 # Ask Doubt on telegram @Upcoming
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/WANGLING-Pro >.
+# Copyright (C) 2025 by WANGLING-Pro@Github, < https://github.com/WANGLING-Pro >.
 # This file is part of < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala > project,
 # and is released under the MIT License.
 # Please see < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala >
