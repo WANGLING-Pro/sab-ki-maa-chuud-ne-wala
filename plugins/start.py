@@ -35,15 +35,8 @@ TUT_VID = f"{TUT_VID}"
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
-        # Original link jo Telegram start parameter se redirect karta hai
-        prem_link = f"https://t.me/{client.username}?start={base64_string}"
-
-        # Step 1: Click counter ke liye redirect link create karna
-        # Render domain use karo (replace below with your own domain)
-        counter_url = f"https://indian-bhabhi.onrender.com/redirect?user_id={message.from_user.id}&link={prem_link}"
-
-        # Step 2: Ab shortener me counter link bhejna hai (not original)
-        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, counter_url)
+        prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
+        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
 
         return short_link
 
