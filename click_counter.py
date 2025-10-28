@@ -46,7 +46,16 @@ def redirect_link():
             upsert=True
         )
 
-        return redirect(target)
+        return f"""
+<html>
+  <head>
+    <meta http-equiv="refresh" content="0; url={target}" />
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>
+"""
 
     except Exception as e:
         return f"Error: {e}", 500
