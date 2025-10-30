@@ -100,16 +100,16 @@ async def custom_batch(client: Client, message: Message):
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    flask_link = f"https://indian-bhabhi.onrender.com/redirect?user_id={message.from_user.id}&link={link}"
+    user_id = message.from_user.id
+link = "https://t.me/yourchannel/123"   # Yahan tumhara actual link dal do
+
+flask_link = f"https://indian-bhabhi.onrender.com/redirect?user_id={user_id}&link={link}"
+
 reply_markup = InlineKeyboardMarkup([
     [InlineKeyboardButton("🔁 Share URL", url=flask_link)]
 ])
-async def send_link(second_message, link, reply_markup):
-    await second_message.reply_text(
-        f"""<b>Here is your link</b>
-{link}
-""", 
-        reply_markup=reply_markup
-    ) 
+await message.reply_text(f"""<b>Here is your link</b>
+
+{link}""", reply_markup=reply_markup)
 
 #=========================================The End=================================================================#
