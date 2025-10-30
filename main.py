@@ -7,7 +7,7 @@ pyrogram.utils.MIN_CHANNEL_ID = -1002917577512
 
 if __name__ == "__main__":
     # Flask app ko background me run karna
-    Thread(target=lambda: click_app.run(host="0.0.0.0", port=10000)).start()
+    Thread(target=lambda: click_app.run(host="0.0.0.0", port=8080)).start()
 
     # Telegram bot run karna
     Bot().run()
