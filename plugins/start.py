@@ -35,38 +35,34 @@ TUT_VID = f"{TUT_VID}"
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
-        # --- click counter fetch karo ---
         user_id = message.from_user.id
-        data = clicks.find_one({"user_id": user_id})
-        total_clicks = data["clicks"] if data else 0
 
+        # Original link that Telegram bot uses
         prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
+
+        # Click counter redirect (Render domain)
+        counter_url = f"https://indian-bhabhi.onrender.com/redirect?user_id={user_id}&link={prem_link}"
+
+        # Send the counter URL to shortener instead of original link
+        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, counter_url)
 
         buttons = [
             [
                 InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
                 InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)
             ],
-            [
-                InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")
-            ]
+            [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")]
         ]
-
-        # --- caption me counter show karo ---
-        caption_text = f"""Total clicks :- {total_clicks}
-
-{SHORT_MSG.format()}"""
 
         await message.reply_photo(
             photo=SHORTENER_PIC,
-            caption=caption_text,
+            caption=f"🔹 Clicks will be counted automatically.\n\n{SHORT_MSG.format()}",
             reply_markup=InlineKeyboardMarkup(buttons),
         )
 
-    except IndexError:
-        pass
-        
+    except Exception as e:
+        print(f"Error in short_url: {e}")
+        await message.reply_text("⚠️ Something went wrong while generating short link.")   
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
