@@ -35,6 +35,11 @@ TUT_VID = f"{TUT_VID}"
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
+        # --- click counter fetch karo ---
+        user_id = message.from_user.id
+        data = clicks.find_one({"user_id": user_id})
+        total_clicks = data["clicks"] if data else 0
+
         prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
 
@@ -48,16 +53,20 @@ async def short_url(client: Client, message: Message, base64_string):
             ]
         ]
 
+        # --- caption me counter show karo ---
+        caption_text = f"Total clicks :- {total_clicks}
+
+{SHORT_MSG.format()}"
+
         await message.reply_photo(
             photo=SHORTENER_PIC,
-            caption=SHORT_MSG.format(
-            ),
+            caption=caption_text,
             reply_markup=InlineKeyboardMarkup(buttons),
         )
 
     except IndexError:
         pass
-
+        
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
