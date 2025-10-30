@@ -1,4 +1,4 @@
-
+se se ek de de
 
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
@@ -104,8 +104,8 @@ async def custom_batch(client: Client, message: Message):
 reply_markup = InlineKeyboardMarkup([
     [InlineKeyboardButton("🔁 Share URL", url=flask_link)]
 ])
-await second_message.reply_text(f"<b>Here is your link</b>
+await second_message.reply_text(f"""<b>Here is your link</b>
 
-{link}", quote=True, reply_markup=reply_markup)
+{link}""", quote=True, reply_markup=reply_markup)
 
 #=========================================The End=================================================================#
