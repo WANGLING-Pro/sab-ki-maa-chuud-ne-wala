@@ -54,9 +54,9 @@ async def short_url(client: Client, message: Message, base64_string):
         ]
 
         # --- caption me counter show karo ---
-        caption_text = f"Total clicks :- {total_clicks}
+        caption_text = f"""Total clicks :- {total_clicks}
 
-{SHORT_MSG.format()}"
+{SHORT_MSG.format()}"""
 
         await message.reply_photo(
             photo=SHORTENER_PIC,
