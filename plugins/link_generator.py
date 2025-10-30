@@ -1,4 +1,4 @@
-se se ek de de
+#======================================= Start Code ====================================== #
 
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
