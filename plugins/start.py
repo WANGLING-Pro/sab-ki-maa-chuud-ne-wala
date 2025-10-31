@@ -33,36 +33,71 @@ from database.db_premium import *
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 
+# =================================================================== #
+# ✅ Short URL Generator — with Click Counter + Total Clicks Display
+# =================================================================== #
+
+from pyrogram import Client
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from urllib.parse import quote
+import aiohttp
+
+# Make sure you have imported:
+# SHORTLINK_URL, SHORTLINK_API, SHORTENER_PIC, SHORT_MSG, TUT_VID, get_shortlink()
+
+# 🔹 Function to fetch total clicks from Flask API
+async def get_total_clicks(user_id):
+    api_url = f"https://indian-bhabhi.onrender.com/get_clicks?user_id={user_id}"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(api_url) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                return data.get("total_clicks", 0)
+            return 0
+
+# 🔹 Main Short URL function
 async def short_url(client: Client, message: Message, base64_string):
     try:
         user_id = message.from_user.id
 
-        # Original link that Telegram bot uses
+        # 1️⃣ Original Telegram deep link
         prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
 
-        # Click counter redirect (Render domain)
-        counter_url = f"https://indian-bhabhi.onrender.com/redirect?user_id={user_id}&link={prem_link}"
+        # 2️⃣ Encode Telegram link for safe redirect
+        encoded_link = quote(prem_link, safe='')
 
-        # Send the counter URL to shortener instead of original link
+        # 3️⃣ Click Counter redirect link (Render)
+        counter_url = f"https://indian-bhabhi.onrender.com/redirect?user_id={user_id}&link={encoded_link}"
+
+        # 4️⃣ Send redirect link to shortener
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, counter_url)
 
+        # 5️⃣ Get user's total clicks from API
+        total_clicks = await get_total_clicks(user_id)
+
+        # 6️⃣ Inline buttons
         buttons = [
-            [
-                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
-                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)
-            ],
-            [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")]
+            [InlineKeyboardButton("📥 Short Link", url=short_link)],
+            [InlineKeyboardButton("🎬 Tutorial", url=TUT_VID)],
+            [InlineKeyboardButton("💎 Premium", callback_data="premium")]
         ]
 
+        # 7️⃣ Send message to user
         await message.reply_photo(
             photo=SHORTENER_PIC,
-            caption=f"🔹 Clicks will be counted automatically.\n\n{SHORT_MSG.format()}",
+            caption=(
+                f"🔹 Clicks are now tracked automatically!\n\n"
+                f"📊 **Your Total Clicks:** `{total_clicks}`\n\n"
+                f"{SHORT_MSG.format()}"
+            ),
             reply_markup=InlineKeyboardMarkup(buttons),
         )
 
     except Exception as e:
-        print(f"Error in short_url: {e}")
-        await message.reply_text("⚠️ Something went wrong while generating short link.")   
+        print(f"❌ Error in short_url: {e}")
+        await message.reply_text("⚠️ Something went wrong while generating your short link.")
+
+# ========================================[ The End Start commond ]==================================== #
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
