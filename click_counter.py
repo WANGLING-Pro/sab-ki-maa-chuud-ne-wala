@@ -1,12 +1,10 @@
 # ============================================================== #
-# ✅ FLASK CLICK COUNTER — Redirect pe MongoDB clicks update
+# ✅ FLASK CLICK COUNTER — Redirect pe MongoDB clicks update (FIXED)
 # ============================================================== #
 
-#  CLICK COUNTER API — v3.0
-
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, jsonify
 from pymongo import MongoClient
-from urllib.parse import quote, unquote
+from urllib.parse import unquote
 import os
 
 click_app = Flask(__name__)
@@ -35,17 +33,17 @@ def redirect_link():
         except ValueError:
             return "Invalid user_id format", 400
 
-        # Decode target link (Telegram start link)
+        # ✅ Increment only on real browser visit
+        # Add a simple header-based filter to prevent bot/script hits
+        user_agent = request.headers.get("User-Agent", "").lower()
+        if "telegram" not in user_agent:  # avoid Telegram preview hits
+            clicks.update_one(
+                {"user_id": user_id},
+                {"$inc": {"clicks": 1}},
+                upsert=True
+            )
+
         target = unquote(target)
-
-        # Increment user click count
-        clicks.update_one(
-            {"user_id": user_id},
-            {"$inc": {"clicks": 1}},
-            upsert=True
-        )
-
-        # Redirect user to Telegram start link
         return f"""
         <html>
             <head>
@@ -61,36 +59,40 @@ def redirect_link():
         return f"Error: {e}", 500
 
 
-# ==================== 🩵 Health Check Route ==================== #
+# ==================== 🩵 Health Check ==================== #
 @click_app.route("/")
 def home():
-    return "✅ Click Counter API Active — Ready to track user clicks!"
+    return "✅ Click Counter API Active — Ready to track real user clicks!"
 
 
-# ==================== 📊 Stats Route (Optional Debug) ==================== #
-@click_app.route("/stats")
-def show_stats():
-    try:
-        data = list(clicks.find({}, {"_id": 0}))
-        total = len(data)
-        return {"total_users": total, "data": data}
-    except Exception as e:
-        return {"error": str(e)}, 500
-
+# ==================== 📊 Get User Clicks ==================== #
 @click_app.route("/get_clicks")
 def get_clicks():
     try:
         user_id = request.args.get("user_id")
         if not user_id:
-            return {"error": "user_id required"}, 400
+            return jsonify({"error": "user_id required"}), 400
 
         data = clicks.find_one({"user_id": int(user_id)}, {"_id": 0, "clicks": 1})
         total_clicks = data["clicks"] if data else 0
-        return {"total_clicks": total_clicks}, 200
+        return jsonify({"total_clicks": total_clicks}), 200
 
     except Exception as e:
-        return {"error": str(e)}, 500
+        return jsonify({"error": str(e)}), 500
+
+
+# ==================== 📊 Stats (for Debug/Admin only) ==================== #
+@click_app.route("/stats")
+def show_stats():
+    try:
+        data = list(clicks.find({}, {"_id": 0}))
+        data.sort(key=lambda x: -x.get("clicks", 0))
+        total = len(data)
+        return jsonify({"total_users": total, "data": data})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 # ================================================================== #
-# 🏁 End of File — click Counter. — More New future Coming soon
+# 🏁 End of File — Click Counter (Fixed for Telegram Bots)
 # ================================================================== #
