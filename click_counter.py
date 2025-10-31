@@ -132,6 +132,78 @@ def show_stats():
 
 
 # ==================== 🩵 Health Check ==================== #
+@click_app.route("/", endpoint="click_home")
+def click_home():
+    return "✅ Click Counter API Active — Link-wise tracking ready!"
+
+
+# ==================== 📊 Get Clicks for Specific Link ==================== #
+@click_app.route("/get_clicks")
+def get_clicks():
+    try:
+        user_id = request.args.get("user_id")
+        link = request.args.get("link")
+
+        if not user_id or not link:
+            return jsonify({"error": "user_id and link required"}), 400
+
+        user_id = int(user_id)
+        link_id = hashlib.md5(link.encode()).hexdigest()
+
+        data = clicks.find_one(
+            {"user_id": user_id, "link_id": link_id},
+            {"_id": 0, "clicks": 1}
+        )
+        total_clicks = data["clicks"] if data else 0
+
+        return jsonify({"total_clicks": total_clicks}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ==================== 📊 All Stats (for Debug) ==================== #
+@click_app.route("/stats")
+def show_stats():
+    try:
+        data = list(clicks.find({}, {"_id": 0}))
+        data.sort(key=lambda x: -x.get("clicks", 0))
+        return jsonify({
+            "total_records": len(data),
+            "data": data
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ================================================================== #
+# 🏁 End of File — Each Link Has Independent Click Count
+# ================================================================== #        # ✅ Avoid counting Telegram preview clicks
+        user_agent = request.headers.get("User-Agent", "").lower()
+        if "telegram" not in user_agent:
+            clicks.update_one(
+                {"user_id": user_id, "link_id": link_id},
+                {"$inc": {"clicks": 1}},
+                upsert=True
+            )
+
+        # Redirect to target Telegram link
+        return f"""
+        <html>
+            <head>
+                <meta http-equiv="refresh" content="0; url={target}" />
+            </head>
+            <body>
+                <p>Redirecting... Please wait.</p>
+            </body>
+        </html>
+        """
+
+    except Exception as e:
+        return f"Error: {e}", 500
+
+
+# ==================== 🩵 Health Check ==================== #
 @click_app.route("/")
 def home():
     return "✅ Click Counter API Active — Link-wise tracking ready!"
