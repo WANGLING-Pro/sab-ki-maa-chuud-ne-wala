@@ -42,10 +42,10 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from urllib.parse import quote
 import aiohttp
 
-# Make sure you have imported:
+# Make sure you import all your variables from config:
 # SHORTLINK_URL, SHORTLINK_API, SHORTENER_PIC, SHORT_MSG, TUT_VID, get_shortlink()
 
-# 🔹 Function to fetch total clicks from Flask API
+# 🔹 Get total clicks from your Flask API
 async def get_total_clicks(user_id):
     api_url = f"https://indian-bhabhi.onrender.com/get_clicks?user_id={user_id}"
     async with aiohttp.ClientSession() as session:
@@ -55,48 +55,53 @@ async def get_total_clicks(user_id):
                 return data.get("total_clicks", 0)
             return 0
 
-# 🔹 Main Short URL function
+
+# 🔹 Main short_url function
 async def short_url(client: Client, message: Message, base64_string):
     try:
         user_id = message.from_user.id
 
-        # 1️⃣ Original Telegram deep link
+        # 1️⃣ Original deep link for Telegram
         prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
 
-        # 2️⃣ Encode Telegram link for safe redirect
+        # 2️⃣ Encode Telegram link safely for URL
         encoded_link = quote(prem_link, safe='')
 
-        # 3️⃣ Click Counter redirect link (Render)
+        # 3️⃣ Redirect link with click counter
         counter_url = f"https://indian-bhabhi.onrender.com/redirect?user_id={user_id}&link={encoded_link}"
 
-        # 4️⃣ Send redirect link to shortener
+        # 4️⃣ Shorten the redirect link
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, counter_url)
 
-        # 5️⃣ Get user's total clicks from API
+        # 5️⃣ Fetch total clicks from API
         total_clicks = await get_total_clicks(user_id)
 
-        # 6️⃣ Inline buttons
+        # 6️⃣ Keep your original button layout (same as before)
         buttons = [
-            [InlineKeyboardButton("📥 Short Link", url=short_link)],
-            [InlineKeyboardButton("🎬 Tutorial", url=TUT_VID)],
-            [InlineKeyboardButton("💎 Premium", callback_data="premium")]
+            [
+                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
+                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)
+            ],
+            [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")]
         ]
 
-        # 7️⃣ Send message to user
+        # 7️⃣ Caption (Clean — no extra text)
+        caption = (
+            f"📊 **Total Clicks :- {total_clicks}**\n\n"
+            f"{SHORT_MSG.format()}"
+        )
+
+        # 8️⃣ Send reply as photo message
         await message.reply_photo(
             photo=SHORTENER_PIC,
-            caption=(
-                f"🔹 Clicks are now tracked automatically!\n\n"
-                f"📊 **Your Total Clicks:** `{total_clicks}`\n\n"
-                f"{SHORT_MSG.format()}"
-            ),
+            caption=caption,
             reply_markup=InlineKeyboardMarkup(buttons),
         )
 
     except Exception as e:
         print(f"❌ Error in short_url: {e}")
         await message.reply_text("⚠️ Something went wrong while generating your short link.")
-
+        
 # ========================================[ The End Start commond ]==================================== #
 
 @Bot.on_message(filters.command('start') & filters.private)
