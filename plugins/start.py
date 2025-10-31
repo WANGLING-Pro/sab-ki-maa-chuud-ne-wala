@@ -87,7 +87,7 @@ async def short_url(client: Client, message: Message, base64_string):
 
         # 7️⃣ Caption (Clean — no extra text)
         caption = (
-            f"📊 **Total Clicks :- {total_clicks}**\n\n"
+            f"Total Clicks :- {total_clicks}\n\n"
             f"{SHORT_MSG.format()}"
         )
 
