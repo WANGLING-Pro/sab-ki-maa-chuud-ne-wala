@@ -77,6 +77,20 @@ def show_stats():
     except Exception as e:
         return {"error": str(e)}, 500
 
+@click_app.route("/get_clicks")
+def get_clicks():
+    try:
+        user_id = request.args.get("user_id")
+        if not user_id:
+            return {"error": "user_id required"}, 400
+
+        data = clicks.find_one({"user_id": int(user_id)}, {"_id": 0, "clicks": 1})
+        total_clicks = data["clicks"] if data else 0
+        return {"total_clicks": total_clicks}, 200
+
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 # ================================================================== #
 # 🏁 End of File — click Counter. — More New future Coming soon
 # ================================================================== #
