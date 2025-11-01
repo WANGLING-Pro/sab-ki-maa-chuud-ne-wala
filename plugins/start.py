@@ -45,9 +45,10 @@ import aiohttp
 # Make sure you import all your variables from config:
 # SHORTLINK_URL, SHORTLINK_API, SHORTENER_PIC, SHORT_MSG, TUT_VID, get_shortlink()
 
-# 🔹 Get total clicks from your Flask API
-async def get_total_clicks(user_id):
-    api_url = f"https://indian-bhabhi.onrender.com/get_clicks?user_id={user_id}"
+# 🔹 Get total clicks from your Flask API (link-wise)
+async def get_total_clicks(user_id, link):
+    encoded_link = quote(link, safe="")
+    api_url = f"https://indian-bhabhi.onrender.com/get_clicks?user_id={user_id}&link={encoded_link}"
     async with aiohttp.ClientSession() as session:
         async with session.get(api_url) as resp:
             if resp.status == 200:
@@ -73,10 +74,10 @@ async def short_url(client: Client, message: Message, base64_string):
         # 4️⃣ Shorten the redirect link
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, counter_url)
 
-        # 5️⃣ Fetch total clicks from API
-        total_clicks = await get_total_clicks(user_id)
+        # 5️⃣ Fetch total clicks from API (🟢 FIXED HERE)
+        total_clicks = await get_total_clicks(user_id, prem_link)
 
-        # 6️⃣ Keep your original button layout (same as before)
+        # 6️⃣ Keep your original button layout
         buttons = [
             [
                 InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
@@ -85,7 +86,7 @@ async def short_url(client: Client, message: Message, base64_string):
             [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")]
         ]
 
-        # 7️⃣ Caption (Clean — no extra text)
+        # 7️⃣ Caption (Clean)
         caption = (
             f"Total Clicks :- {total_clicks}\n\n"
             f"{SHORT_MSG.format()}"
