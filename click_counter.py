@@ -60,10 +60,11 @@ def redirect_link():
 
 
 # ==================== 🩵 Health Check ==================== #
-@click_app.route("/", endpoint="click_home")
-def click_home():
-    return "✅ Click Counter API Active — Link-wise tracking ready!"
 
+if not any(rule.rule == "/" for rule in click_app.url_map.iter_rules()):
+    @click_app.route("/", endpoint="click_counter_home_unique")
+    def click_counter_home_unique():
+        return "✅ Click Counter API Active — Link-wise tracking ready!"
 
 # ==================== 📊 Get Clicks for Specific Link ==================== #
 @click_app.route("/get_clicks")
