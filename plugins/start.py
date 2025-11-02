@@ -266,17 +266,13 @@ async def start_command(client: Client, message: Message):
                 id=message.from_user.id
             ),
             reply_markup=reply_markup,
-            message_effect_id=5104841245755180586)  # 🔥
+            message_effect_id=5104841245755180588)  # 🔥
         
         return
 
 
 
 #=====================================================================================##
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
-
-
 
 # Create a global dictionary to store chat data
 chat_data_cache = {}
