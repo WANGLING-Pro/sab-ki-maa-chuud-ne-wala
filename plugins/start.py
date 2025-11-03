@@ -40,15 +40,22 @@ TUT_VID = f"{TUT_VID}"
 from pyrogram import Client
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from urllib.parse import quote
-import aiohttp
+import aiohttp, os
 
-# Make sure you import all your variables from config:
+# Import from config:
 # SHORTLINK_URL, SHORTLINK_API, SHORTENER_PIC, SHORT_MSG, TUT_VID, get_shortlink()
+
+# 🔹 Get your Flask API URL from Render Environment
+API_URL = os.getenv("API_URL", "").rstrip("/")
+
+if not API_URL:
+    raise ValueError("⚠️ Missing 'API_URL' in Render environment variables!")
+
 
 # 🔹 Get total clicks from your Flask API (link-wise)
 async def get_total_clicks(user_id, link):
     encoded_link = quote(link, safe="")
-    api_url = f"https://indian-bhabhi.onrender.com/get_clicks?user_id={user_id}&link={encoded_link}"
+    api_url = f"{API_URL}/get_clicks?user_id={user_id}&link={encoded_link}"
     async with aiohttp.ClientSession() as session:
         async with session.get(api_url) as resp:
             if resp.status == 200:
@@ -68,16 +75,16 @@ async def short_url(client: Client, message: Message, base64_string):
         # 2️⃣ Encode Telegram link safely for URL
         encoded_link = quote(prem_link, safe='')
 
-        # 3️⃣ Redirect link with click counter
-        counter_url = f"https://indian-bhabhi.onrender.com/redirect?user_id={user_id}&link={encoded_link}"
+        # 3️⃣ Redirect link using your Flask API
+        counter_url = f"{API_URL}/redirect?user_id={user_id}&link={encoded_link}"
 
         # 4️⃣ Shorten the redirect link
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, counter_url)
 
-        # 5️⃣ Fetch total clicks from API (🟢 FIXED HERE)
+        # 5️⃣ Fetch total clicks for this link
         total_clicks = await get_total_clicks(user_id, prem_link)
 
-        # 6️⃣ Keep your original button layout
+        # 6️⃣ Buttons layout
         buttons = [
             [
                 InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
@@ -86,13 +93,13 @@ async def short_url(client: Client, message: Message, base64_string):
             [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")]
         ]
 
-        # 7️⃣ Caption (Clean)
+        # 7️⃣ Caption with total clicks
         caption = (
             f"Total Clicks :- {total_clicks}\n\n"
             f"{SHORT_MSG.format()}"
         )
 
-        # 8️⃣ Send reply as photo message
+        # 8️⃣ Send message
         await message.reply_photo(
             photo=SHORTENER_PIC,
             caption=caption,
@@ -102,8 +109,8 @@ async def short_url(client: Client, message: Message, base64_string):
     except Exception as e:
         print(f"❌ Error in short_url: {e}")
         await message.reply_text("⚠️ Something went wrong while generating your short link.")
-        
-# ========================================[ The End Start commond ]==================================== #
+
+# ============================================= The end Short Url Code ========================================= #
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
