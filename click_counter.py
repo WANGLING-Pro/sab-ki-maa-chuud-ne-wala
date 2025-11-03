@@ -35,14 +35,16 @@ def redirect_link():
         # ✅ Unique link ID for every Telegram link
         link_id = hashlib.md5(target.encode()).hexdigest()
 
-        # ✅ Count all clicks (Telegram + Browser)
-        clicks.update_one(
-            {"user_id": user_id, "link_id": link_id},
-            {"$inc": {"clicks": 1}},
-            upsert=True
-        )
+        # ✅ Avoid Telegram preview & bot clicks
+        user_agent = request.headers.get("User-Agent", "").lower()
+        if all(x not in user_agent for x in ["telegram", "bot", "preview"]):
+            clicks.update_one(
+                {"user_id": user_id, "link_id": link_id},
+                {"$inc": {"clicks": 1}},
+                upsert=True
+            )
 
-        # Redirect user
+        # ✅ Redirect user properly
         return f"""
         <html>
             <head>
