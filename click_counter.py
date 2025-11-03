@@ -5,7 +5,7 @@
 from flask import Flask, request, redirect, jsonify
 from pymongo import MongoClient
 from urllib.parse import unquote
-import os, hashlib
+import os, hashlib, requests
 
 click_app = Flask(__name__)
 
@@ -44,17 +44,14 @@ def redirect_link():
                 upsert=True
             )
 
-        # ✅ Redirect user properly
-        return f"""
-        <html>
-            <head>
-                <meta http-equiv="refresh" content="0; url={target}" />
-            </head>
-            <body>
-                <p>Redirecting... Please wait.</p>
-            </body>
-        </html>
-        """
+        # ✅ Check if target reachable before redirect
+        try:
+            test = requests.head(target, timeout=5)
+        except:
+            return "⚠️ Target site not reachable!", 502
+
+        # ✅ Safe redirect (no meta refresh)
+        return redirect(target, code=302)
 
     except Exception as e:
         return f"Error: {e}", 500
