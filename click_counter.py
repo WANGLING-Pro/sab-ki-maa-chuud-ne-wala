@@ -1,11 +1,11 @@
 # ============================================================== #
-# ✅ FLASK CLICK COUNTER — Each Link Has Separate Click Counter
+# ✅ FLASK CLICK COUNTER — Global link-wise unique click counting
 # ============================================================== #
 
-from flask import Flask, request, redirect, jsonify
+from flask import Flask, request, jsonify, redirect
 from pymongo import MongoClient
 from urllib.parse import unquote
-import os, hashlib, requests
+import os, hashlib, requests, time
 
 click_app = Flask(__name__)
 
@@ -16,7 +16,11 @@ if not mongo_url:
 
 mongo = MongoClient(mongo_url)
 db = mongo["botdb"]
-clicks = db["clicks"]  # collection name
+clicks = db["clicks"]   # collection for link docs
+
+# helper: make link id
+def make_link_id(link: str) -> str:
+    return hashlib.md5(link.encode()).hexdigest()
 
 
 # ==================== 🎯 Redirect Endpoint ==================== #
@@ -26,29 +30,50 @@ def redirect_link():
         user_id = request.args.get("user_id")
         target = request.args.get("link")
 
-        if not user_id or not target:
-            return "Missing parameters: user_id and link", 400
+        if not target:
+            return "Missing parameter: link", 400
 
-        user_id = int(user_id)
-        target = unquote(target)
+        # decode and normalize target
+        target = unquote(target).strip()
+        link_id = make_link_id(target)
 
-        # ✅ Unique link ID for every Telegram link
-        link_id = hashlib.md5(target.encode()).hexdigest()
-
-        # ✅ Avoid Telegram preview & bot clicks
+        # --- ignore bot/preview hits (Telegram preview, crawlers, etc.) ---
         user_agent = request.headers.get("User-Agent", "").lower()
-        if all(x not in user_agent for x in ["telegram", "bot", "preview"]):
+        if any(x in user_agent for x in ("telegram", "bot", "preview", "crawler", "curl", "python-requests")):
+            return redirect(target, code=302)
+
+        # --- Ensure target reachable (brief HEAD request) ---
+        try:
+            r = requests.head(target, timeout=5, allow_redirects=True)
+            if r.status_code >= 400:
+                r2 = requests.get(target, timeout=5)
+                if r2.status_code >= 400:
+                    return "⚠️ Target not reachable", 502
+        except Exception:
+            pass  # still redirect even if HEAD fails
+
+        # --- Unique counting (global): per link_id, not per user_id ---
+        if user_id:
+            clicked_before = clicks.find_one({
+                "link_id": link_id,
+                "clicked_users": {"$in": [user_id]}
+            })
+        else:
+            clicked_before = None
+
+        if not clicked_before:
             clicks.update_one(
-                {"user_id": user_id, "link_id": link_id},
-                {"$inc": {"clicks": 1}},
+                {"link_id": link_id},
+                {
+                    "$inc": {"clicks": 1},
+                    "$addToSet": {"clicked_users": user_id},
+                    "$setOnInsert": {
+                        "target": target,
+                        "created_at": int(time.time())
+                    }
+                },
                 upsert=True
             )
-
-        # ✅ Check if target reachable before redirect
-        try:
-            test = requests.head(target, timeout=5)
-        except:
-            return "⚠️ Target site not reachable!", 502
 
         # ✅ Safe redirect (no meta refresh)
         return redirect(target, code=302)
@@ -60,29 +85,28 @@ def redirect_link():
 # ==================== 🩵 Health Check ==================== #
 @click_app.route("/", endpoint="click_counter_home")
 def click_counter_home():
-    return "✅ Click Counter API Active — Link-wise tracking ready!"
+    return "✅ Click Counter API Active — Global link-wise tracking ready!"
 
 
 # ==================== 📊 Get Clicks for Specific Link ==================== #
 @click_app.route("/get_clicks", endpoint="click_counter_get_clicks")
 def click_counter_get_clicks():
     try:
-        user_id = request.args.get("user_id")
         link = request.args.get("link")
+        if not link:
+            return jsonify({"error": "link parameter required"}), 400
 
-        if not user_id or not link:
-            return jsonify({"error": "user_id and link required"}), 400
+        link = unquote(link).strip()
+        link_id = make_link_id(link)
 
-        user_id = int(user_id)
-        link_id = hashlib.md5(link.encode()).hexdigest()
+        doc = clicks.find_one({"link_id": link_id}, {"_id": 0, "clicks": 1, "clicked_users": 1})
+        total_clicks = doc.get("clicks", 0) if doc else 0
+        unique_users = len(doc.get("clicked_users", [])) if doc else 0
 
-        data = clicks.find_one(
-            {"user_id": user_id, "link_id": link_id},
-            {"_id": 0, "clicks": 1}
-        )
-        total_clicks = data["clicks"] if data else 0
-
-        return jsonify({"total_clicks": total_clicks}), 200
+        return jsonify({
+            "total_clicks": total_clicks,
+            "unique_users": unique_users
+        }), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -92,7 +116,7 @@ def click_counter_get_clicks():
 @click_app.route("/stats", endpoint="click_counter_stats")
 def click_counter_stats():
     try:
-        data = list(clicks.find({}, {"_id": 0}))
+        data = list(clicks.find({}, {"_id": 0, "link_id": 1, "target": 1, "clicks": 1}))
         data.sort(key=lambda x: -x.get("clicks", 0))
         return jsonify({
             "total_records": len(data),
@@ -103,5 +127,5 @@ def click_counter_stats():
 
 
 # ================================================================== #
-# 🏁 End of File — Each Link Has Independent Click Count
+# 🏁 End of File — Global Click Count (shared by all users)
 # ================================================================== #
