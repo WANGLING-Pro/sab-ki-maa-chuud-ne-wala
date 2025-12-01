@@ -109,24 +109,22 @@ async def custom_batch(client: Client, message: Message):
 
 from pyrogram import filters
 
-@Bot.on_message(filters.private & filters.command(["getlink", "get_link", "get"]))
-async def generate_link_command(client, message):
+@Bot.on_message(filters.private & admin & filters.command(["getlink", "get"]))
+async def generate_link(client, message):
 
-    # user must REPLY to a message
+    # User MUST reply to a message
     if not message.reply_to_message:
-        return await message.reply_text(
-            "⚠️ Reply to any DB Channel message (or any content) and send:\n\n👉 /getlink"
+        return await message.reply(
+            "⚠️ Please REPLY to a DB Channel message.\n\nUse:\n/getlink"
         )
 
     replied = message.reply_to_message
 
-    # get DB channel message id
-    try:
-        msg_id = await get_message_id(client, replied)
-    except:
-        return await message.reply("❌ This message is not from DB channel!")
+    # Try to extract message ID
+    msg_id = await get_message_id(client, replied)
+    if not msg_id:
+        return await message.reply("❌ This message is not from DB Channel!")
 
-    # encode & create link
     base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
 
@@ -134,19 +132,7 @@ async def generate_link_command(client, message):
         [[InlineKeyboardButton("🔁 Share URL", url=f"https://telegram.me/share/url?url={link}")]]
     )
 
-    await message.reply_text(
+    await message.reply(
         f"<b>Here is your generated link:</b>\n\n{link}",
         reply_markup=reply_markup
     )
-
-
-# ======================================================
-# Block ALL non-command messages so bot stays silent
-# ======================================================
-
-@Bot.on_message(filters.private & ~filters.command([
-    "batch", "genlink", "custom_batch", "getlink", "get_link", "get"
-]))
-async def ignore_everything(client, message):
-    # Do nothing for all other private messages
-    pass
