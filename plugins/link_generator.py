@@ -103,3 +103,16 @@ async def custom_batch(client: Client, message: Message):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
     await message.reply(f"<b>Here is your custom batch link:-</b>\n\n{link}", reply_markup=reply_markup)
     
+@Bot.on_message(filters.command(["getlink", "get"]) & filters.private)
+async def getlink_handler(client, message):
+
+    if not message.reply_to_message:
+        return await message.reply("⚠️ Reply to ANY message to generate link.")
+
+    msg = message.reply_to_message
+    msg_id = msg.id
+
+    base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
+    link = f"https://t.me/{client.username}?start={base64_string}"
+
+    await message.reply(f"Here is your link:-\n\n{link}")
