@@ -143,21 +143,18 @@ async def start_command(client: Client, message: Message):
         except:
             pass
 
-    # Handle normal message flow
-    text = message.text
+  # ---- FIX: Only handle /start <payload> ----
+if message.text.startswith("/start ") and len(message.text.split(" ", 1)) == 2:
 
-    if len(text) > 7:
-        try:
-            basic = text.split(" ", 1)[1]
-            if basic.startswith("yu3elk"):
-                base64_string = basic[6:-1]
-            else:
-                base64_string = basic
+    basic = message.text.split(" ", 1)[1]
 
-            if not is_premium and user_id != OWNER_ID and not basic.startswith("yu3elk"):
-                await short_url(client, message, base64_string)
-                return
+    # Non-premium → short_url
+    if not is_premium and user_id != OWNER_ID and not basic.startswith("yu3elk"):
+        await short_url(client, message, basic)
+        return
 
+    # premium → normal flow continue
+    base64_string = basic[6:-1] if basic.startswith("yu3elk") else basic
         except Exception as e:
             print(f"Error processing start payload: {e}")
 
