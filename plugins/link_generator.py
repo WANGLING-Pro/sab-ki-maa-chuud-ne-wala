@@ -103,36 +103,3 @@ async def custom_batch(client: Client, message: Message):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
     await message.reply(f"<b>Here is your custom batch link:-</b>\n\n{link}", reply_markup=reply_markup)
     
-# ===========================
-# NEW: /getlink command only
-# ===========================
-
-from pyrogram import filters
-
-@Bot.on_message(filters.private & admin & filters.command(["getlink", "get"]))
-async def generate_link(client, message):
-
-    # User MUST reply to a message
-    if not message.reply_to_message:
-        return await message.reply(
-            "⚠️ Please REPLY to a DB Channel message.\n\nUse:\n/getlink"
-        )
-
-    replied = message.reply_to_message
-
-    # Try to extract message ID
-    msg_id = await get_message_id(client, replied)
-    if not msg_id:
-        return await message.reply("❌ This message is not from DB Channel!")
-
-    base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
-    link = f"https://t.me/{client.username}?start={base64_string}"
-
-    reply_markup = InlineKeyboardMarkup(
-        [[InlineKeyboardButton("🔁 Share URL", url=f"https://telegram.me/share/url?url={link}")]]
-    )
-
-    await message.reply(
-        f"<b>Here is your generated link:</b>\n\n{link}",
-        reply_markup=reply_markup
-    )
