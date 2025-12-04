@@ -236,10 +236,10 @@ async def start_command(client: Client, message: Message):
     # NORMAL START MESSAGE
     start_markup = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("• More Channels •", url="https://t.me/P_World_81")],
+            [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/P_World_81")],
             [
-                InlineKeyboardButton("About", callback_data="about"),
-                InlineKeyboardButton("Help", callback_data="help"),
+                InlineKeyboardButton("•ᴀʙᴏᴜᴛ", callback_data="about"),
+                InlineKeyboardButton("•ʜᴇʟᴘ", callback_data="help"),
             ],
         ]
     )
