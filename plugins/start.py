@@ -6,25 +6,15 @@ import os
 import random
 import sys
 import re
-import string
+import string 
+import string as rohit
 import time
 from datetime import datetime, timedelta
-from urllib.parse import quote
-
-import aiohttp
-from pyrogram import Client, filters
+from pyrogram import Client, filters, version
 from pyrogram.enums import ParseMode, ChatAction
-from pyrogram.errors import FloodWait
-from pyrogram.types import (
-    Message,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-    CallbackQuery,
-    ReplyKeyboardMarkup,
-    ChatInviteLink,
-    ChatPrivileges
-)
-
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges
+from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
+from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
 from helper_func import *
