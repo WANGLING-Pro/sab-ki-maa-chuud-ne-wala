@@ -91,19 +91,23 @@ async def start_command(client: Client, message: Message):
     is_premium = await is_premium_user(user_id)
 
     # BAN CHECK
-    banned = await db.get_ban_users()
-    if user_id in banned:
-        return await message.reply(
-            "<b>⛔ You are BANNED.</b>",
+    banned_users = await db.get_ban_users()
+    if user_id in banned_users:
+        return await message.reply_text(
+            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
+            "<i>Contact support if you think this is a mistake.</i>",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Support", url=BAN_SUPPORT)]]
-            ),
+                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
+            )
         )
 
     # FSUB
     if not await is_subscribed(client, user_id):
         return await not_joined(client, message)
 
+    # File auto-delete time in seconds
+    FILE_AUTO_DELETE = await db.get_del_timer()
+    
     # NEW USER ADD
     if not await db.present_user(user_id):
         try:
@@ -191,8 +195,8 @@ async def start_command(client: Client, message: Message):
         if FILE_DEL > 0:
 
             note = await message.reply(
-                f"<b>This file will be deleted in {get_exp_time(FILE_DEL)}.</b>"
-            )
+                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>"
+        )
 
             await asyncio.sleep(FILE_DEL)
 
@@ -210,11 +214,11 @@ async def start_command(client: Client, message: Message):
                 )
 
                 kb = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("Get File Again", url=reload_url)]]
+                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
                 ) if reload_url else None
 
                 await note.edit(
-                    "<b>Your file has been deleted.</b>",
+                    "<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇</b>",
                     reply_markup=kb
                 )
 
