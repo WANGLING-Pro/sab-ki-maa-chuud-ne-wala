@@ -10,7 +10,7 @@ import string
 import string as rohit
 import time
 from datetime import datetime, timedelta
-from pyrogram import Client, filters, version
+from pyrogram import Client, filters, 
 from pyrogram.enums import ParseMode, ChatAction
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
