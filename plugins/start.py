@@ -17,6 +17,7 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
 from bot import Bot
 from config import *
+from config import MSG_EFFECT
 from helper_func import *
 from database.database import *
 from database.db_premium import *
@@ -73,6 +74,7 @@ async def short_url(client: Client, message: Message, base64_string):
             photo=SHORTENER_PIC,
             caption=caption,
             reply_markup=InlineKeyboardMarkup(buttons),
+            message_effect_id=MSG_EFFECT
         )
 
     except Exception as e:
@@ -196,7 +198,9 @@ async def start_command(client: Client, message: Message):
 
             note = await message.reply(
                 f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>"
-        )
+            ),
+            message_effect_id=MSG_EFFECT
+            )
 
             await asyncio.sleep(FILE_DEL)
 
@@ -305,9 +309,9 @@ async def not_joined(client: Client, message: Message):
                 except Exception as e:
                     print(e)
                     return await temp.edit(
-                        f"<b>Error. Contact Developer.</b>\n<code>{e}</code>"
-                    )
-
+                        f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @I_am_nerev_die</i></b>\n"
+            f"<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>"
+)
         # Try Again
         try:
             buttons.append(
@@ -331,6 +335,7 @@ async def not_joined(client: Client, message: Message):
                 id=message.from_user.id
             ),
             reply_markup=InlineKeyboardMarkup(buttons),
+            message_effect_id=MSG_EFFECT
         )
 
     except Exception as e:
