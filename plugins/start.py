@@ -74,7 +74,9 @@ async def short_url(client: Client, message: Message, base64_string):
             photo=SHORTENER_PIC,
             caption=caption,
             reply_markup=InlineKeyboardMarkup(buttons),
-            message_effect_id=MSG_EFFECT
+            ),
+        reply_markup=reply_markup,
+        message_effect_id=MSG_EFFECT
         )
 
     except Exception as e:
@@ -251,8 +253,8 @@ async def start_command(client: Client, message: Message):
             mention=message.from_user.mention,
             id=message.from_user.id
         ),
-        reply_markup=start_markup,
-        message_effect_id=5104841245755180586
+        reply_markup=reply_markup,
+        message_effect_id=MSG_EFFECT
     )
 
 
@@ -335,7 +337,9 @@ async def not_joined(client: Client, message: Message):
                 id=message.from_user.id
             ),
             reply_markup=InlineKeyboardMarkup(buttons),
-            message_effect_id=MSG_EFFECT
+            ),
+        reply_markup=reply_markup,
+        message_effect_id=MSG_EFFECT
         )
 
     except Exception as e:
