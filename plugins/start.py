@@ -333,15 +333,12 @@ async def not_joined(client: Client, message: Message):
                 id=message.from_user.id
             ),
             reply_markup=InlineKeyboardMarkup(buttons),
-            ),
-        reply_markup=reply_markup,
-        message_effect_id=MSG_EFFECT
+            message_effect_id=MSG_EFFECT
         )
-
+        
     except Exception as e:
         print(e)
         await temp.edit(f"<b>Error Occurred:</b> {e}")
-
 
 # =================================================================== #
 # 🔥 Premium + Commands + Count (UNCHANGED)
