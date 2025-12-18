@@ -71,12 +71,10 @@ async def short_url(client: Client, message: Message, base64_string):
         caption = f"Total Clicks :- {total_clicks}\n\n{SHORT_MSG.format()}"
 
         await message.reply_photo(
-            photo=SHORTENER_PIC,
-            caption=caption,
-            reply_markup=InlineKeyboardMarkup(buttons),
-            ),
-        reply_markup=reply_markup,
-        message_effect_id=MSG_EFFECT
+    photo=SHORTENER_PIC,
+    caption=caption,
+    reply_markup=InlineKeyboardMarkup(buttons),
+    message_effect_id=MSG_EFFECT
         )
 
     except Exception as e:
