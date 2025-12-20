@@ -78,8 +78,8 @@ async def short_url(client: Client, message: Message, base64_string):
         )
 
     except Exception as e:
-        print(f"❌ Error ShortURL: {e}")
-        await message.reply("⚠️ Something went wrong.")
+        print(f"❌ Error in short_url: {e}")
+        await message.reply_text("⚠️ Something went wrong while generating your short link.")
 
 
 # =================================================================== #
