@@ -230,8 +230,6 @@ async def start_command(client: Client, message: Message):
         return
 
     # NORMAL START MESSAGE
-@Bot.on_message(filters.command("start") & filters.private)
-async def start_command(client, message):
 
     start_markup = InlineKeyboardMarkup(
         [
