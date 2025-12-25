@@ -71,19 +71,18 @@ async def short_url(client: Client, message: Message, base64_string):
         caption = f"Total Clicks :- {total_clicks}\n\n{SHORT_MSG.format()}"
 
         await message.reply_photo(
-    photo=SHORTENER_PIC,
-    caption=caption,
-    reply_markup=InlineKeyboardMarkup(buttons),
-    message_effect_id=MSG_EFFECT
+            photo=SHORTENER_PIC,
+            caption=caption,
+            reply_markup=InlineKeyboardMarkup(buttons),
+            message_effect_id=MSG_EFFECT
         )
 
-        except Exception as e:
+    except Exception as e:
         import traceback
-        traceback.print_exc() # Ye error ko terminal me detail me dikhayega
+        traceback.print_exc() 
         print(f"❌ Error in short_url: {e}")
-        
-        # Ye line tumhe Telegram par asli error bata degi
-        await message.reply_text(f"⚠️ Error Details:\n`{e}`\n\nCheck logs for more info.")
+        # Ye line bot par asli error message degi
+        await message.reply_text(f"⚠️ Error Details:\n`{e}`")
 
 
 # =================================================================== #
