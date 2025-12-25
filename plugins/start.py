@@ -77,9 +77,13 @@ async def short_url(client: Client, message: Message, base64_string):
     message_effect_id=MSG_EFFECT
         )
 
-    except Exception as e:
+        except Exception as e:
+        import traceback
+        traceback.print_exc() # Ye error ko terminal me detail me dikhayega
         print(f"❌ Error in short_url: {e}")
-        await message.reply_text("⚠️ Something went wrong while generating your short link.")
+        
+        # Ye line tumhe Telegram par asli error bata degi
+        await message.reply_text(f"⚠️ Error Details:\n`{e}`\n\nCheck logs for more info.")
 
 
 # =================================================================== #
