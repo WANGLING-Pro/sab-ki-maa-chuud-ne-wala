@@ -122,53 +122,65 @@ async def start_command(client: Client, message: Message):
 
     # PAYLOAD HANDLE
     if message.text.startswith("/start ") and len(message.text.split(" ", 1)) == 2:
-
         try:
             basic = message.text.split(" ", 1)[1]
 
-            # Non-premium → shortener
+            # Shortener Logic (Bina badlav ke)
             if (not is_premium) and (user_id != OWNER_ID) and (not basic.startswith("yu3elk")):
                 await short_url(client, message, basic)
                 return
 
-            # premium
             base64_string = basic[6:-1] if basic.startswith("yu3elk") else basic
+            string = await decode(base64_string)
+            
+            ids = []
+            target_chat_id = client.db_channel.id  # Default
+
+            # --- NAYA DYNAMIC LOGIC ---
+            if string.startswith("batch-"):
+                # Format: batch-ChannelID-StartID-EndID
+                parts = string.split("-")
+                target_chat_id = int(parts[1])
+                f_id = int(parts[2])
+                l_id = int(parts[3])
+                ids = range(f_id, l_id + 1) if f_id <= l_id else range(f_id, l_id - 1, -1)
+
+            elif string.startswith("get-"):
+                # Format: get-ChannelID-MsgID
+                parts = string.split("-")
+                target_chat_id = int(parts[1])
+                ids = [int(parts[2])]
+
+            else:
+                # Purana Compatibility Logic (Multiplication wala)
+                args = string.split("-")
+                if len(args) == 3:
+                    start = int(int(args[1]) / abs(client.db_channel.id))
+                    end = int(int(args[2]) / abs(client.db_channel.id))
+                    ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
+                elif len(args) == 2:
+                    ids = [int(int(args[1]) / abs(client.db_channel.id))]
 
         except Exception as e:
             print(f"Error payload: {e}")
-            return
+            return await message.reply("❌ Invalid Link or Expired!")
 
-        # Decode
-        string = await decode(base64_string)
-        args = string.split("-")
+        temp = await message.reply("<b>Pʟᴇᴀsᴇ Wᴀɪᴛ... Fᴇᴛᴄʜɪɴɢ Fɪʟᴇs</b>")
 
-        ids = []
         try:
-            if len(args) == 3:
-                start = int(int(args[1]) / abs(client.db_channel.id))
-                end = int(int(args[2]) / abs(client.db_channel.id))
-                ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
-
-            elif len(args) == 2:
-                ids = [int(int(args[1]) / abs(client.db_channel.id))]
-
+            # Helper func me humne chat_id pass karne ka option diya tha
+            msgs = await get_messages(client, ids, chat_id=target_chat_id)
         except Exception as e:
-            print(f"Error decode id: {e}")
-            return
-
-        temp = await message.reply("<b>Please wait...</b>")
-
-        try:
-            msgs = await get_messages(client, ids)
-        except:
-            await message.reply("Something went wrong!")
+            print(f"Get Messages Error: {e}")
+            await message.reply("Something went wrong while fetching files!")
             return
         finally:
             await temp.delete()
 
         sent_msgs = []
-
         for msg in msgs:
+            if not msg or msg.empty: continue # Empty messages skip karein
+            
             original_caption = msg.caption.html if msg.caption else ""
             final_caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
@@ -183,18 +195,13 @@ async def start_command(client: Client, message: Message):
                 )
                 await asyncio.sleep(0.5)
                 sent_msgs.append(s)
-
             except FloodWait as e:
                 await asyncio.sleep(e.x)
-                s = await msg.copy(
-                    chat_id=message.from_user.id,
-                    caption=final_caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
-                )
+                s = await msg.copy(chat_id=message.from_user.id, caption=final_caption, parse_mode=ParseMode.HTML, reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
                 sent_msgs.append(s)
-
+            except Exception as e:
+                print(f"Copy Error: {e}")
+        
         # AUTO DELETE
         FILE_DEL = await db.get_del_timer()
         if FILE_DEL > 0:
