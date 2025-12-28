@@ -5,7 +5,7 @@ import re
 from pyrogram import Client, filters, enums
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import Bot
-from config import ADMINS
+from config import OWNER_ID
 from helper_func import encode, admin
 
 # --- Helper Function: Message se Channel ID aur Msg ID nikalna ---
