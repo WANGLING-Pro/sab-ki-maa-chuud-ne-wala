@@ -120,72 +120,52 @@ async def start_command(client: Client, message: Message):
     # File auto-delete time
     FILE_AUTO_DELETE = await db.get_del_timer()
 
-    # 3. LINK PROCESSING (PAYLOAD)
+        # PAYLOAD HANDLE
     if len(message.command) > 1:
-        basic = message.command[1]
-        
-        # SHORTENER CHECK (OWNER BYPASS)
-        # Agar user Owner nahi hai, tabhi Shortener check hoga
-        # (Assuming is_premium_user logic is handled via DB or variable)
-        is_premium = await db.is_premium(user_id) 
-        
-        if (user_id != real_owner_id) and (not is_premium) and (not basic.startswith("yu3elk")):
-            await short_url(client, message, basic)
-            return
-
         try:
-            # Decoding
+            basic = message.command[1]
+            
+            # 🔥 OWNER & PREMIUM BYPASS
+            # Is line ko dhyan se dekho, OWNER_ID ko int() me convert kiya hai
+            if (user_id != int(OWNER_ID)) and (not is_premium) and (not basic.startswith("yu3elk")):
+                await short_url(client, message, basic)
+                return
+
             base64_string = basic[6:-1] if basic.startswith("yu3elk") else basic
             string = await decode(base64_string)
             
             ids = []
-            target_chat_id = client.db_channel.id # Default Value (Important for custom_batch)
+            target_chat_id = client.db_channel.id
 
-            # --- HYBRID LOGIC TO HANDLE ALL LINK TYPES ---
-            
-            # TYPE A: BATCH (New Format) -> batch-ChannelID-Start-End
+            # --- HYBRID LOGIC (Old + New Link Support) ---
             if string.startswith("batch-"):
                 parts = string.split("-")
                 target_chat_id = int(parts[1])
                 f_id, l_id = int(parts[2]), int(parts[3])
                 ids = range(f_id, l_id + 1) if f_id <= l_id else range(f_id, l_id - 1, -1)
 
-            # TYPE B: GET (Complex Handling for Custom Batch vs New Link)
             elif string.startswith("get-"):
                 parts = string.split("-")
-                
-                # Check: Part 1 kya hai?
-                # Agar Part 1 "-100..." hai, to ye Naya Link hai.
-                # Agar Part 1 bada positive number hai (math wala), to ye Custom Batch hai.
-                
-                part_1_val = parts[1]
-                
-                if part_1_val.startswith("-100"):
-                    # === NEW LINK (Dynamic) ===
-                    target_chat_id = int(part_1_val)
+                # Agar -100 hai toh naya link, varna purana multiplication logic
+                if parts[1].startswith("-100"):
+                    target_chat_id = int(parts[1])
                     ids = [int(parts[2])]
                 else:
-                    # === CUSTOM BATCH (Legacy Math) ===
-                    # Formula: OriginalID = Encoded / DB_Channel_ID
                     base_id = abs(client.db_channel.id)
-                    start = int(int(parts[1]) / base_id)
-                    end = int(int(parts[2]) / base_id)
+                    start, end = int(int(parts[1]) / base_id), int(int(parts[2]) / base_id)
                     ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
-                    target_chat_id = client.db_channel.id # Always DB Channel for Custom Batch
-
-            # TYPE C: PURE NUMBERS (Legacy V2)
             else:
+                # Legacy Logic
                 args = string.split("-")
                 base_id = abs(client.db_channel.id)
-                if len(args) == 3:
-                    start = int(int(args[1]) / base_id)
-                    end = int(int(args[2]) / base_id)
-                    ids = range(start, end + 1)
-                elif len(args) == 2:
+                if len(args) == 2:
                     ids = [int(int(args[1]) / base_id)]
+                elif len(args) == 3:
+                    start, end = int(int(args[1]) / base_id), int(int(args[2]) / base_id)
+                    ids = range(start, end + 1)
 
         except Exception as e:
-            print(f"Error Decoding: {e}")
+            print(f"Error: {e}")
             return await message.reply("❌ Invalid Link or Expired!")
 
         if not ids:
