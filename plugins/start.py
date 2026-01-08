@@ -86,7 +86,7 @@ async def short_url(client: Client, message: Message, base64_string):
 
 
 # =================================================================== #
-# 🔥 START COMMAND FIXED — AUTO SHORTENER DISABLED
+# 🔥 START COMMAND FIXED — OWNER BYPASS & DYNAMIC LINK SUPPORT
 # =================================================================== #
 
 @Bot.on_message(filters.command('start') & filters.private)
@@ -95,24 +95,21 @@ async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     is_premium = await is_premium_user(user_id)
 
-    # BAN CHECK
+    # 1. BAN CHECK
     banned_users = await db.get_ban_users()
     if user_id in banned_users:
         return await message.reply_text(
-            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
-            "<i>Contact support if you think this is a mistake.</i>",
+            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>",
             reply_markup=InlineKeyboardMarkup(
                 [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
             )
         )
 
-    # FSUB
-    if not await is_subscribed(client, user_id):
-        return await not_joined(client, message)
+    # 2. FSUB (OWNER BYPASS ADDED)
+    if user_id != OWNER_ID: # Agar owner nahi hai tabhi check karega
+        if not await is_subscribed(client, user_id):
+            return await not_joined(client, message)
 
-    # File auto-delete time in seconds
-    FILE_AUTO_DELETE = await db.get_del_timer()
-    
     # NEW USER ADD
     if not await db.present_user(user_id):
         try:
@@ -120,13 +117,13 @@ async def start_command(client: Client, message: Message):
         except:
             pass
 
-    # PAYLOAD HANDLE
-    if message.text.startswith("/start ") and len(message.text.split(" ", 1)) == 2:
+    # 3. PAYLOAD HANDLE
+    if len(message.command) > 1:
         try:
-            basic = message.text.split(" ", 1)[1]
+            basic = message.command[1]
 
-            # Shortener Logic (Bina badlav ke)
-            if (not is_premium) and (user_id != OWNER_ID) and (not basic.startswith("yu3elk")):
+            # SHORTENER BYPASS (OWNER BYPASS ADDED)
+            if (user_id != OWNER_ID) and (not is_premium) and (not basic.startswith("yu3elk")):
                 await short_url(client, message, basic)
                 return
 
@@ -134,11 +131,10 @@ async def start_command(client: Client, message: Message):
             string = await decode(base64_string)
             
             ids = []
-            target_chat_id = client.db_channel.id  # Default
+            target_chat_id = client.db_channel.id  # Default logic
 
-            # --- NAYA DYNAMIC LOGIC ---
+            # --- DYNAMIC LOGIC ---
             if string.startswith("batch-"):
-                # Format: batch-ChannelID-StartID-EndID
                 parts = string.split("-")
                 target_chat_id = int(parts[1])
                 f_id = int(parts[2])
@@ -146,25 +142,31 @@ async def start_command(client: Client, message: Message):
                 ids = range(f_id, l_id + 1) if f_id <= l_id else range(f_id, l_id - 1, -1)
 
             elif string.startswith("get-"):
-                # Format: get-ChannelID-MsgID
                 parts = string.split("-")
-                target_chat_id = int(parts[1])
-                ids = [int(parts[2])]
-
-            else:
-                # Purana Compatibility Logic (Multiplication wala)
-                args = string.split("-")
-                if len(args) == 3:
-                    start = int(int(args[1]) / abs(client.db_channel.id))
-                    end = int(int(args[2]) / abs(client.db_channel.id))
+                # Yahan check hoga ki kya ye multiplication wala purana link hai ya naya dynamic link
+                if len(parts) == 3 and abs(client.db_channel.id) in [int(parts[1]), int(parts[2])]:
+                    # Purana multiplication format
+                    start = int(int(parts[1]) / abs(client.db_channel.id))
+                    end = int(int(parts[2]) / abs(client.db_channel.id))
                     ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
-                elif len(args) == 2:
+                else:
+                    # Naya format: get-ChannelID-MsgID
+                    target_chat_id = int(parts[1])
+                    ids = [int(parts[2])]
+            else:
+                # Agar sirf IDs hain (Legacy)
+                args = string.split("-")
+                if len(args) == 2:
                     ids = [int(int(args[1]) / abs(client.db_channel.id))]
+
+            if not ids:
+                return await message.reply("❌ Link has no valid files!")
 
         except Exception as e:
             print(f"Error payload: {e}")
             return await message.reply("❌ Invalid Link or Expired!")
 
+        # --- FILES SENDING LOGIC ---
         temp = await message.reply("<b>Pʟᴇᴀsᴇ Wᴀɪᴛ... Fᴇᴛᴄʜɪɴɢ Fɪʟᴇs</b>")
 
         try:
