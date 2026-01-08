@@ -86,102 +86,126 @@ async def short_url(client: Client, message: Message, base64_string):
 
 
 # =================================================================== #
-# 🔥 START COMMAND FIXED — OWNER BYPASS & DYNAMIC LINK SUPPORT
+# 🔥 START COMMAND FINAL FIX — OWNER BYPASS & HYBRID LINK SUPPORT
 # =================================================================== #
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
 
     user_id = message.from_user.id
-    is_premium = await is_premium_user(user_id)
+    
+    # OWNER ID SAFETY CHECK (String vs Int issue fix)
+    real_owner_id = int(OWNER_ID)
 
     # 1. BAN CHECK
     banned_users = await db.get_ban_users()
     if user_id in banned_users:
         return await message.reply_text(
-            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
-            )
+            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
+            "<i>Contact support if you think this is a mistake.</i>",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]])
         )
 
-    # 2. FSUB (OWNER BYPASS ADDED)
-    if user_id != OWNER_ID: # Agar owner nahi hai tabhi check karega
+    # 2. FORCE SUB (OWNER BYPASS)
+    # Agar user Owner nahi hai, tabhi Force Sub check hoga
+    if user_id != real_owner_id:
         if not await is_subscribed(client, user_id):
             return await not_joined(client, message)
 
-    # NEW USER ADD
+    # NEW USER DATABASE ADD
     if not await db.present_user(user_id):
-        try:
-            await db.add_user(user_id)
-        except:
-            pass
+        try: await db.add_user(user_id)
+        except: pass
 
-    # 3. PAYLOAD HANDLE
+    # File auto-delete time
+    FILE_AUTO_DELETE = await db.get_del_timer()
+
+    # 3. LINK PROCESSING (PAYLOAD)
     if len(message.command) > 1:
+        basic = message.command[1]
+        
+        # SHORTENER CHECK (OWNER BYPASS)
+        # Agar user Owner nahi hai, tabhi Shortener check hoga
+        # (Assuming is_premium_user logic is handled via DB or variable)
+        is_premium = await db.is_premium(user_id) 
+        
+        if (user_id != real_owner_id) and (not is_premium) and (not basic.startswith("yu3elk")):
+            await short_url(client, message, basic)
+            return
+
         try:
-            basic = message.command[1]
-
-            # SHORTENER BYPASS (OWNER BYPASS ADDED)
-            if (user_id != OWNER_ID) and (not is_premium) and (not basic.startswith("yu3elk")):
-                await short_url(client, message, basic)
-                return
-
+            # Decoding
             base64_string = basic[6:-1] if basic.startswith("yu3elk") else basic
             string = await decode(base64_string)
             
             ids = []
-            target_chat_id = client.db_channel.id  # Default logic
+            target_chat_id = client.db_channel.id # Default Value (Important for custom_batch)
 
-            # --- DYNAMIC LOGIC ---
+            # --- HYBRID LOGIC TO HANDLE ALL LINK TYPES ---
+            
+            # TYPE A: BATCH (New Format) -> batch-ChannelID-Start-End
             if string.startswith("batch-"):
                 parts = string.split("-")
                 target_chat_id = int(parts[1])
-                f_id = int(parts[2])
-                l_id = int(parts[3])
+                f_id, l_id = int(parts[2]), int(parts[3])
                 ids = range(f_id, l_id + 1) if f_id <= l_id else range(f_id, l_id - 1, -1)
 
+            # TYPE B: GET (Complex Handling for Custom Batch vs New Link)
             elif string.startswith("get-"):
                 parts = string.split("-")
-                # Yahan check hoga ki kya ye multiplication wala purana link hai ya naya dynamic link
-                if len(parts) == 3 and abs(client.db_channel.id) in [int(parts[1]), int(parts[2])]:
-                    # Purana multiplication format
-                    start = int(int(parts[1]) / abs(client.db_channel.id))
-                    end = int(int(parts[2]) / abs(client.db_channel.id))
-                    ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
-                else:
-                    # Naya format: get-ChannelID-MsgID
-                    target_chat_id = int(parts[1])
+                
+                # Check: Part 1 kya hai?
+                # Agar Part 1 "-100..." hai, to ye Naya Link hai.
+                # Agar Part 1 bada positive number hai (math wala), to ye Custom Batch hai.
+                
+                part_1_val = parts[1]
+                
+                if part_1_val.startswith("-100"):
+                    # === NEW LINK (Dynamic) ===
+                    target_chat_id = int(part_1_val)
                     ids = [int(parts[2])]
-            else:
-                # Agar sirf IDs hain (Legacy)
-                args = string.split("-")
-                if len(args) == 2:
-                    ids = [int(int(args[1]) / abs(client.db_channel.id))]
+                else:
+                    # === CUSTOM BATCH (Legacy Math) ===
+                    # Formula: OriginalID = Encoded / DB_Channel_ID
+                    base_id = abs(client.db_channel.id)
+                    start = int(int(parts[1]) / base_id)
+                    end = int(int(parts[2]) / base_id)
+                    ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
+                    target_chat_id = client.db_channel.id # Always DB Channel for Custom Batch
 
-            if not ids:
-                return await message.reply("❌ Link has no valid files!")
+            # TYPE C: PURE NUMBERS (Legacy V2)
+            else:
+                args = string.split("-")
+                base_id = abs(client.db_channel.id)
+                if len(args) == 3:
+                    start = int(int(args[1]) / base_id)
+                    end = int(int(args[2]) / base_id)
+                    ids = range(start, end + 1)
+                elif len(args) == 2:
+                    ids = [int(int(args[1]) / base_id)]
 
         except Exception as e:
-            print(f"Error payload: {e}")
+            print(f"Error Decoding: {e}")
             return await message.reply("❌ Invalid Link or Expired!")
 
-        # --- FILES SENDING LOGIC ---
-        temp = await message.reply("<b>Pʟᴇᴀsᴇ Wᴀɪᴛ... Fᴇᴛᴄʜɪɴɢ Fɪʟᴇs</b>")
+        if not ids:
+            return await message.reply("❌ No files found!")
 
+        # --- SENDING FILES ---
+        temp = await message.reply("<b>Pʟᴇᴀsᴇ Wᴀɪᴛ... Fᴇᴛᴄʜɪɴɢ Fɪʟᴇs</b>")
+        
         try:
-            # Helper func me humne chat_id pass karne ka option diya tha
+            # chat_id parameter pass karna zaroori hai naye helper function ke liye
             msgs = await get_messages(client, ids, chat_id=target_chat_id)
         except Exception as e:
-            print(f"Get Messages Error: {e}")
-            await message.reply("Something went wrong while fetching files!")
+            await temp.edit(f"❌ Error: {e}")
             return
         finally:
             await temp.delete()
 
         sent_msgs = []
         for msg in msgs:
-            if not msg or msg.empty: continue # Empty messages skip karein
+            if not msg or msg.empty: continue
             
             original_caption = msg.caption.html if msg.caption else ""
             final_caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
@@ -189,7 +213,7 @@ async def start_command(client: Client, message: Message):
 
             try:
                 s = await msg.copy(
-                    chat_id=message.from_user.id,
+                    chat_id=user_id,
                     caption=final_caption,
                     parse_mode=ParseMode.HTML,
                     reply_markup=reply_markup,
@@ -199,59 +223,38 @@ async def start_command(client: Client, message: Message):
                 sent_msgs.append(s)
             except FloodWait as e:
                 await asyncio.sleep(e.x)
-                s = await msg.copy(chat_id=message.from_user.id, caption=final_caption, parse_mode=ParseMode.HTML, reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
+                s = await msg.copy(chat_id=user_id, caption=final_caption, parse_mode=ParseMode.HTML, reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
                 sent_msgs.append(s)
-            except Exception as e:
-                print(f"Copy Error: {e}")
-        
-        # AUTO DELETE
-        FILE_DEL = await db.get_del_timer()
-        if FILE_DEL > 0:
+            except Exception:
+                pass
 
-            note = await message.reply(
-                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>", 
+        # --- AUTO DELETE LOGIC ---
+        if FILE_AUTO_DELETE > 0:
+            note = await message.reply( 
+                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ.</b>", 
                 message_effect_id=MSG_EFFECT
             )
-            await asyncio.sleep(FILE_DEL)
+            await asyncio.sleep(FILE_AUTO_DELETE)
 
             for s in sent_msgs:
-                try:
-                    await s.delete()
-                except:
-                    pass
+                try: await s.delete()
+                except: pass
 
             try:
-                reload_url = (
-                    f"https://t.me/{client.username}?start={message.command[1]}"
-                    if message.command and len(message.command) > 1
-                    else None
-                )
-
-                kb = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
-                ) if reload_url else None
-
+                reload_url = f"https://t.me/{client.username}?start={message.command[1]}"
+                kb = InlineKeyboardMarkup([[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]])
                 await note.edit(
-                    "<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇</b>",
+                    "<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ 👇</b>",
                     reply_markup=kb
                 )
-
-            except Exception as e:
-                print(e)
-
+            except: pass
         return
 
     # NORMAL START MESSAGE
-
-    start_markup = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/P_World_81")],
-            [
-                InlineKeyboardButton("•ᴀʙᴏᴜᴛ", callback_data="about"),
-                InlineKeyboardButton("•ʜᴇʟᴘ", callback_data="help"),
-            ],
-        ]
-    )
+    start_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/P_World_81")],
+        [InlineKeyboardButton("• ᴀʙᴏᴜᴛ", callback_data="about"), InlineKeyboardButton("• ʜᴇʟᴘ", callback_data="help")]
+    ])
 
     await message.reply_photo(
         photo=START_PIC,
@@ -260,11 +263,27 @@ async def start_command(client: Client, message: Message):
             last=message.from_user.last_name,
             username=None if not message.from_user.username else '@' + message.from_user.username,
             mention=message.from_user.mention,
-            id=message.from_user.id
+            id=user_id
         ),
         reply_markup=start_markup,
         message_effect_id=MSG_EFFECT
-)
+    )
+
+# Note: Make sure helper_func.py has 'not_joined' function defined or imported.
+# Agar 'not_joined' error de, to use 'start.py' ke andar define karna padega ya import karna padega.
+async def not_joined(client, message):
+    buttons = [
+        [InlineKeyboardButton(text="Join Channel", url=client.invitelink)],
+        [InlineKeyboardButton(text="Try Again", url=f"https://t.me/{client.username}?start={message.command[1]}")]
+    ]
+    try:
+        buttons.append([InlineKeyboardButton(text="Join Channel 2", url=client.invitelink2)])
+    except: pass
+    
+    await message.reply(
+        text="<b>You must join our channel to access this file.</b>",
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
 
 # =================================================================== #
 # 🔥 not_joined()
