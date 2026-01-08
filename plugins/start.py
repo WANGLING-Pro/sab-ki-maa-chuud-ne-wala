@@ -120,13 +120,12 @@ async def start_command(client: Client, message: Message):
     # File auto-delete time
     FILE_AUTO_DELETE = await db.get_del_timer()
 
-        # PAYLOAD HANDLE
+            # PAYLOAD HANDLE
     if len(message.command) > 1:
         try:
             basic = message.command[1]
             
-            # 🔥 OWNER & PREMIUM BYPASS
-            # Is line ko dhyan se dekho, OWNER_ID ko int() me convert kiya hai
+            # 🔥 OWNER & PREMIUM BYPASS (Isse Owner ko join link nahi dikhega)
             if (user_id != int(OWNER_ID)) and (not is_premium) and (not basic.startswith("yu3elk")):
                 await short_url(client, message, basic)
                 return
@@ -135,9 +134,10 @@ async def start_command(client: Client, message: Message):
             string = await decode(base64_string)
             
             ids = []
+            # Target chat default channel id
             target_chat_id = client.db_channel.id
 
-            # --- HYBRID LOGIC (Old + New Link Support) ---
+            # --- HYBRID DECODING (Sab tarah ke links ke liye) ---
             if string.startswith("batch-"):
                 parts = string.split("-")
                 target_chat_id = int(parts[1])
@@ -146,16 +146,17 @@ async def start_command(client: Client, message: Message):
 
             elif string.startswith("get-"):
                 parts = string.split("-")
-                # Agar -100 hai toh naya link, varna purana multiplication logic
+                # Naya format check (-100 se start hota hai)
                 if parts[1].startswith("-100"):
                     target_chat_id = int(parts[1])
                     ids = [int(parts[2])]
                 else:
+                    # Purana Custom Batch logic (Multiplication wala)
                     base_id = abs(client.db_channel.id)
                     start, end = int(int(parts[1]) / base_id), int(int(parts[2]) / base_id)
                     ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
             else:
-                # Legacy Logic
+                # Legacy compatibility
                 args = string.split("-")
                 base_id = abs(client.db_channel.id)
                 if len(args) == 2:
@@ -164,24 +165,27 @@ async def start_command(client: Client, message: Message):
                     start, end = int(int(args[1]) / base_id), int(int(args[2]) / base_id)
                     ids = range(start, end + 1)
 
+            if not ids:
+                return await message.reply("❌ Link is empty!")
+
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Decoding Error: {e}")
             return await message.reply("❌ Invalid Link or Expired!")
 
-        if not ids:
-            return await message.reply("❌ No files found!")
-
-        # --- SENDING FILES ---
-        temp = await message.reply("<b>Pʟᴇᴀsᴇ Wᴀɪᴛ... Fᴇᴛᴄʜɪɴɢ Fɪʟᴇs</b>")
-        
+        # --- FETCH MESSAGES ---
+        temp = await message.reply("<b>Please wait...</b>")
         try:
-            # chat_id parameter pass karna zaroori hai naye helper function ke liye
+            # Yahan target_chat_id pass karna zaroori hai
             msgs = await get_messages(client, ids, chat_id=target_chat_id)
         except Exception as e:
-            await temp.edit(f"❌ Error: {e}")
+            print(f"Fetch Error: {e}")
+            await message.reply("Something went wrong while fetching files!")
             return
         finally:
             await temp.delete()
+
+        if not ids:
+            return await message.reply("❌ No files found!")
 
         sent_msgs = []
         for msg in msgs:
