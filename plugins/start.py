@@ -120,12 +120,13 @@ async def start_command(client: Client, message: Message):
     # File auto-delete time
     FILE_AUTO_DELETE = await db.get_del_timer()
 
-            # PAYLOAD HANDLE
+                # PAYLOAD HANDLE
     if len(message.command) > 1:
         try:
             basic = message.command[1]
             
-            # 🔥 OWNER & PREMIUM BYPASS (Isse Owner ko join link nahi dikhega)
+            # 🔥 OWNER & PREMIUM BYPASS
+            # int(OWNER_ID) zaroori hai kyunki config se hamesha string milti hai
             if (user_id != int(OWNER_ID)) and (not is_premium) and (not basic.startswith("yu3elk")):
                 await short_url(client, message, basic)
                 return
@@ -134,10 +135,11 @@ async def start_command(client: Client, message: Message):
             string = await decode(base64_string)
             
             ids = []
-            # Target chat default channel id
+            # Default channel setup
             target_chat_id = client.db_channel.id
+            base_id = abs(client.db_channel.id)
 
-            # --- HYBRID DECODING (Sab tarah ke links ke liye) ---
+            # --- HYBRID DECODING LOGIC ---
             if string.startswith("batch-"):
                 parts = string.split("-")
                 target_chat_id = int(parts[1])
@@ -146,44 +148,44 @@ async def start_command(client: Client, message: Message):
 
             elif string.startswith("get-"):
                 parts = string.split("-")
-                # Naya format check (-100 se start hota hai)
+                # Agar pehla part -100 hai toh ye naya Dynamic Link hai
                 if parts[1].startswith("-100"):
                     target_chat_id = int(parts[1])
                     ids = [int(parts[2])]
                 else:
-                    # Purana Custom Batch logic (Multiplication wala)
-                    base_id = abs(client.db_channel.id)
-                    start, end = int(int(parts[1]) / base_id), int(int(parts[2]) / base_id)
+                    # Agar pehla part positive hai toh ye Custom Batch (Multiplication) hai
+                    start = int(int(parts[1]) / base_id)
+                    end = int(int(parts[2]) / base_id)
                     ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
             else:
-                # Legacy compatibility
+                # Old Legacy format compatibility
                 args = string.split("-")
-                base_id = abs(client.db_channel.id)
-                if len(args) == 2:
-                    ids = [int(int(args[1]) / base_id)]
-                elif len(args) == 3:
-                    start, end = int(int(args[1]) / base_id), int(int(args[2]) / base_id)
+                if len(args) == 3:
+                    start = int(int(args[1]) / base_id)
+                    end = int(int(args[2]) / base_id)
                     ids = range(start, end + 1)
+                elif len(args) == 2:
+                    ids = [int(int(args[1]) / base_id)]
 
             if not ids:
-                return await message.reply("❌ Link is empty!")
+                return await message.reply("❌ Link is empty or invalid!")
 
         except Exception as e:
+            # Yahan print zaroori hai taaki aap log mein dekh sako ki kya error hai
             print(f"Decoding Error: {e}")
             return await message.reply("❌ Invalid Link or Expired!")
 
-        # --- FETCH MESSAGES ---
-        temp = await message.reply("<b>Please wait...</b>")
+        # --- FILE SENDING LOGIC ---
+        temp = await message.reply("<b>Please wait... Fetching files...</b>")
         try:
-            # Yahan target_chat_id pass karna zaroori hai
+            # Sabse bada fix: target_chat_id pass karna zaroori hai
             msgs = await get_messages(client, ids, chat_id=target_chat_id)
         except Exception as e:
             print(f"Fetch Error: {e}")
-            await message.reply("Something went wrong while fetching files!")
+            await message.reply("❌ Something went wrong while fetching files!")
             return
         finally:
             await temp.delete()
-
         if not ids:
             return await message.reply("❌ No files found!")
 
