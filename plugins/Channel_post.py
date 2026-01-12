@@ -1,6 +1,5 @@
 # Don't Remove Credit @P_World_18, @I_am_Never_die
 # Ask Doubt on telegram @Upcoming
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/WANGLING-Pro >.
 # This file is part of < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala > project,
 # and is released under the MIT License.
 # Please see < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala >
@@ -35,8 +34,13 @@ async def channel_post(client: Client, message: Message):
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
 
-    await reply_text.edit(f"<b>Here is your link</b>\n\n{link}", reply_markup=reply_markup, disable_web_page_preview = True)
-
+    await reply_text.edit(
+    f"<blockquote><b>Here is your link</b>\n\n{link}</blockquote>",
+    reply_markup=reply_markup,
+    disable_web_page_preview=True,
+    parse_mode="HTML"
+    )
+    
     if not DISABLE_CHANNEL_BUTTON:
         await post_message.edit_reply_markup(reply_markup)
 
