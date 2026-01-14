@@ -86,9 +86,176 @@ async def short_url(client: Client, message: Message, base64_string):
 
 
 # =================================================================== #
-# 🔥 START COMMAND FINAL FIX — OWNER BYPASS & HYBRID LINK SUPPORT
+# 🔥 START COMMAND FIXED — AUTO SHORTENER DISABLED
 # =================================================================== #
 
+@Bot.on_message(filters.command('start') & filters.private)
+async def start_command(client: Client, message: Message):
+
+    user_id = message.from_user.id
+    is_premium = await is_premium_user(user_id)
+
+    # BAN CHECK
+    banned_users = await db.get_ban_users()
+    if user_id in banned_users:
+        return await message.reply_text(
+            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
+            "<i>Contact support if you think this is a mistake.</i>",
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
+            )
+        )
+
+    # FSUB
+    if not await is_subscribed(client, user_id):
+        return await not_joined(client, message)
+
+    # File auto-delete time in seconds
+    FILE_AUTO_DELETE = await db.get_del_timer()
+    
+    # NEW USER ADD
+    if not await db.present_user(user_id):
+        try:
+            await db.add_user(user_id)
+        except:
+            pass
+
+    # PAYLOAD HANDLE
+    if message.text.startswith("/start ") and len(message.text.split(" ", 1)) == 2:
+
+        try:
+            basic = message.text.split(" ", 1)[1]
+
+            # Non-premium → shortener
+            if (not is_premium) and (user_id != OWNER_ID) and (not basic.startswith("yu3elk")):
+                await short_url(client, message, basic)
+                return
+
+            # premium
+            base64_string = basic[6:-1] if basic.startswith("yu3elk") else basic
+
+        except Exception as e:
+            print(f"Error payload: {e}")
+            return
+
+        # Decode
+        string = await decode(base64_string)
+        args = string.split("-")
+
+        ids = []
+        try:
+            if len(args) == 3:
+                start = int(int(args[1]) / abs(client.db_channel.id))
+                end = int(int(args[2]) / abs(client.db_channel.id))
+                ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
+
+            elif len(args) == 2:
+                ids = [int(int(args[1]) / abs(client.db_channel.id))]
+
+        except Exception as e:
+            print(f"Error decode id: {e}")
+            return
+
+        temp = await message.reply("<b>Please wait...</b>")
+
+        try:
+            msgs = await get_messages(client, ids)
+        except:
+            await message.reply("Something went wrong!")
+            return
+        finally:
+            await temp.delete()
+
+        sent_msgs = []
+
+        for msg in msgs:
+            original_caption = msg.caption.html if msg.caption else ""
+            final_caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
+            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+
+            try:
+                s = await msg.copy(
+                    chat_id=message.from_user.id,
+                    caption=final_caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=reply_markup,
+                    protect_content=PROTECT_CONTENT
+                )
+                await asyncio.sleep(0.5)
+                sent_msgs.append(s)
+
+            except FloodWait as e:
+                await asyncio.sleep(e.x)
+                s = await msg.copy(
+                    chat_id=message.from_user.id,
+                    caption=final_caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=reply_markup,
+                    protect_content=PROTECT_CONTENT
+                )
+                sent_msgs.append(s)
+
+        # AUTO DELETE
+        FILE_DEL = await db.get_del_timer()
+        if FILE_DEL > 0:
+
+            note = await message.reply(
+                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>", 
+                message_effect_id=MSG_EFFECT
+            )
+            await asyncio.sleep(FILE_DEL)
+
+            for s in sent_msgs:
+                try:
+                    await s.delete()
+                except:
+                    pass
+
+            try:
+                reload_url = (
+                    f"https://t.me/{client.username}?start={message.command[1]}"
+                    if message.command and len(message.command) > 1
+                    else None
+                )
+
+                kb = InlineKeyboardMarkup(
+                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
+                ) if reload_url else None
+
+                await note.edit(
+                    "<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇</b>",
+                    reply_markup=kb
+                )
+
+            except Exception as e:
+                print(e)
+
+        return
+
+    # NORMAL START MESSAGE
+
+    start_markup = InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/P_World_81")],
+            [
+                InlineKeyboardButton("•ᴀʙᴏᴜᴛ", callback_data="about"),
+                InlineKeyboardButton("•ʜᴇʟᴘ", callback_data="help"),
+            ],
+        ]
+    )
+
+    await message.reply_photo(
+        photo=START_PIC,
+        caption=START_MSG.format(
+            first=message.from_user.first_name,
+            last=message.from_user.last_name,
+            username=None if not message.from_user.username else '@' + message.from_user.username,
+            mention=message.from_user.mention,
+            id=message.from_user.id
+        ),
+        reply_markup=start_markup,
+        message_effect_id=MSG_EFFECT
+    )
 
 
 # Note: Make sure helper_func.py has 'not_joined' function defined or imported.
