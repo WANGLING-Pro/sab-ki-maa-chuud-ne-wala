@@ -36,7 +36,7 @@ async def channel_post(client: Client, message: Message):
 
     await reply_text.edit(
     f"<blockquote><b>Here is your link:-</b></blockquote>",reply_markup=reply_markup,disable_web_page_preview=True,parse_mode="HTML"
-                           )
+     )
     
     if not DISABLE_CHANNEL_BUTTON:
         await post_message.edit_reply_markup(reply_markup)
