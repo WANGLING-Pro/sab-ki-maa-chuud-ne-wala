@@ -1,5 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from pyrogram.errors import FloodWait
 from bot import Bot
 import asyncio
 from helper_func import encode, admin
@@ -79,6 +80,8 @@ async def batch(client: Client, message: Message):
             copied = await msg.copy(client.db_channel.id)
             new_ids.append(copied.id)
 
+            await asyncio.sleep(0.3)
+
         except FloodWait as e:
             await asyncio.sleep(e.x)
         except:
@@ -101,7 +104,18 @@ async def batch(client: Client, message: Message):
         [[InlineKeyboardButton("🔁 Share URL", url=f"https://telegram.me/share/url?url={link}")]]
     )
 
+    # ✅ 1) Send in bot chat
     await message.reply(
         f"✅ Batch link generated:\n\n{link}",
         reply_markup=reply_markup
-            )
+    )
+
+    # ✅ 2) Attach same button to LAST DB message (PERMANENT BACKUP)
+    try:
+        await client.edit_message_reply_markup(
+            chat_id=client.db_channel.id,
+            message_id=new_ids[-1],
+            reply_markup=reply_markup
+        )
+    except Exception as e:
+        print("Failed to attach button to DB last message:", e)
