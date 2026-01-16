@@ -17,7 +17,13 @@ async def batch(client: Client, message: Message):
         try:
             first_message = await client.ask(
                 chat_id=message.from_user.id,
-                text="Forward the FIRST message from ANY channel (bot must be admin there).",
+                text=(
+    "<blockquote>"
+    "Forward The Batch First Message From your Batch Channel (With Forward Tag)\n\n"
+    "OR\n\n"
+    "Give Me Batch First Message Link from your Batch Channel"
+    "</blockquote>"
+                )
                 filters=filters.forwarded,
                 timeout=60
             )
@@ -37,7 +43,13 @@ async def batch(client: Client, message: Message):
         try:
             second_message = await client.ask(
                 chat_id=message.from_user.id,
-                text="Forward the LAST message from SAME channel.",
+                text=(
+    "<blockquote>"
+    "Forward The Batch Last Message From your Batch Channel (With Forward Tag)\n\n"
+    "OR\n\n"
+    "Give Me Batch Last Message Link from your Batch Channel"
+    "</blockquote>"
+                ),
                 filters=filters.forwarded,
                 timeout=60
             )
