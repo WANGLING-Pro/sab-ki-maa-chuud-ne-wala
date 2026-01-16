@@ -225,7 +225,7 @@ async def start_command(client: Client, message: Message):
                 ) if reload_url else None
 
                 await note.edit( "<blockquote>" "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n" "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇" "</blockquote>",
-                                reply_markup=kb
+                                reply_markup=kb,
                                 parse_mode="HTML"
                                 )
 
