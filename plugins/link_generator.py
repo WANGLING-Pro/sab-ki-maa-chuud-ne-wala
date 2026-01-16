@@ -118,7 +118,7 @@ async def batch(client: Client, message: Message):
 
     # ✅ 1) Send in bot chat
     await message.reply(
-        f"✅ Batch link generated:\n\n{link}",
+        f"Here is your link:-\n\n{link}",
         reply_markup=reply_markup
     )
 
