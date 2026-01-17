@@ -192,6 +192,7 @@ async def start_command(client: Client, message: Message):
         # =========================
 
         FILE_DEL = await db.get_del_timer()
+        print("AUTO DELETE CHECK:", FILE_DEL, sent_msgs)
 
         if FILE_DEL and FILE_DEL > 0 and sent_msgs:
 
