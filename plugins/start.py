@@ -173,7 +173,7 @@ async def start_command(client: Client, message: Message):
             final_caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
 
-           try:
+            try:
                 s = await msg.copy(
                     chat_id=user_id,
                     caption=final_caption,
@@ -186,7 +186,7 @@ async def start_command(client: Client, message: Message):
 
             except FloodWait as e:
                 await asyncio.sleep(e.x)
-
+                
         # =========================
         # AUTO DELETE SYSTEM
         # =========================
