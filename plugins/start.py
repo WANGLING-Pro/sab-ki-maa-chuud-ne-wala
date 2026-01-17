@@ -196,33 +196,32 @@ async def start_command(client: Client, message: Message):
                 sent_msgs.append(s)
 
 # =========================
-# AUTO DELETE SYSTEM
+# AUTO DELETE SYSTEM (FIXED)
 # =========================
 
 FILE_DEL = await db.get_del_timer()
 
-if FILE_DEL > 0:
+if FILE_DEL > 0 and sent_msgs:
 
-    # Send warning message
-    note = await message.reply(
+    # Send warning under LAST FILE
+    note = await sent_msgs[-1].reply(
         f"<blockquote>"
-        f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_AUTO_DELETE)}.\n\n"
-        f"Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
+        f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_DEL)}.\n\n"
+        f"Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
         f"</blockquote>",
         parse_mode="HTML"
     )
 
-    # Wait before deleting
     await asyncio.sleep(FILE_DEL)
 
-    # Delete sent files/messages safely
-    for s in sent_msgs or []:
+    # Delete files
+    for s in sent_msgs:
         try:
             await s.delete()
         except:
             pass
 
-    # Build reload button
+    # Reload button
     reload_url = None
     if message.command and len(message.command) > 1:
         reload_url = f"https://t.me/{client.username}?start={message.command[1]}"
@@ -233,20 +232,18 @@ if FILE_DEL > 0:
             [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
         )
 
-    # Edit warning message to "deleted" message
+    # Edit warning
     try:
         await note.edit(
             "<blockquote>"
-            "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n"
-            "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇"
+            "ʏᴏᴜʀ ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n"
+            "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ 👇"
             "</blockquote>",
             reply_markup=kb,
             parse_mode="HTML"
         )
     except Exception as e:
-        print("Edit failed:", e)
-
-return
+        print("Edit failed:", e) 
 
     # NORMAL START MESSAGE
 
