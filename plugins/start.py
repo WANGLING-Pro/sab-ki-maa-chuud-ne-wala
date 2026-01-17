@@ -194,53 +194,52 @@ async def start_command(client: Client, message: Message):
                     protect_content=PROTECT_CONTENT
                 )
                 sent_msgs.append(s)
+# =========================
+# AUTO DELETE SYSTEM
+# =========================
 
-    # AUTO DELETE
-        FILE_DEL = await db.get_del_timer()
-        if FILE_DEL > 0:
+FILE_DEL = await db.get_del_timer()
 
-            note = await message.reply(
-    text=(
-        "<blockquote>"
-        f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_AUTO_DELETE)}.\n\n"
-        "Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
-        "</blockquote>"
-    ),
-    parse_mode="HTML",
-    message_effect_id=MSG_EFFECT
-            )
-            await asyncio.sleep(FILE_DEL)
+if FILE_DEL and FILE_DEL > 0:
 
-            for s in sent_msgs:
-                try:
-                    await s.delete()
-                except:
-                    pass
+    note = await message.reply(
+        text=(
+            "<blockquote>"
+            f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_DEL)}.\n\n"
+            "Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
+            "</blockquote>"
+        ),
+        parse_mode="HTML",
+        message_effect_id=MSG_EFFECT
+    )
 
-            try:
-                reload_url = (
-                    f"https://t.me/{client.username}?start={message.command[1]}"
-                    if message.command and len(message.command) > 1
-                    else None
-                )
+    await asyncio.sleep(FILE_DEL)
 
-                kb = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
-                ) if reload_url else None
+    for s in sent_msgs:
+        try:
+            await s.delete()
+        except:
+            pass
 
-                await note.edit(
-                    text=(
-                        "<blockquote>" "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n" "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇"  "</blockquote>"
-                    ),
-                    reply_markup=kb,
-                    parse_mode="HTML"
-                    )
+    reload_url = None
+    if message.command and len(message.command) > 1:
+        reload_url = f"https://t.me/{client.username}?start={message.command[1]}"
 
-            except Exception as e:
-                print(e)
+    kb = InlineKeyboardMarkup(
+        [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
+    ) if reload_url else None
 
-        return
-
+    await note.edit(
+        text=(
+            "<blockquote>"
+            "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n"
+            "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇"
+            "</blockquote>"
+        ),
+        reply_markup=kb,
+        parse_mode="HTML"
+        )
+    
                 
     # NORMAL START MESSAGE
 
