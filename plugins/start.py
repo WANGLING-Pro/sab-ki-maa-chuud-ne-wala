@@ -197,12 +197,9 @@ async def start_command(client: Client, message: Message):
 
             note = await message.reply(
                 text=(
-                    "<blockquote>"
                     f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_DEL)}.\n\n"
                     "Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
-                    "</blockquote>"
                 ),
-                parse_mode="HTML",
                 message_effect_id=MSG_EFFECT
             )
 
@@ -223,13 +220,10 @@ async def start_command(client: Client, message: Message):
             try:
                 await note.edit(
                     text=(
-                        "<blockquote>"
                         "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n"
                         "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇"
-                        "</blockquote>"
                     ),
-                    reply_markup=kb,
-                    parse_mode="HTML"
+                    reply_markup=kb
                 )
             except:
                 pass
@@ -275,7 +269,7 @@ async def not_joined(client, message):
     except: pass
     
     await message.reply(
-        text="<b>ʏᴏᴜ ᴍᴜsᴛ ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴀᴄᴄᴇss ᴛʜɪs ғɪʟᴇ.</b>",
+        text="<blockquote expandable>ʏᴏᴜ ᴍᴜsᴛ ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴀᴄᴄᴇss ᴛʜɪs ғɪʟᴇ.</blockquote>",
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
