@@ -1,22 +1,16 @@
 import threading
-import os
-from flask import Flask
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from bot import Bot
 
-app = Flask(__name__)
+class Dummy(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"OK")
 
-@app.route("/")
-def home():
-    return "OK"
-
-def run_flask():
-    port = int(os.getenv("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
-
-def run_bot():
-    bot = Bot()
-    bot.run()
+def run_dummy():
+    HTTPServer(("0.0.0.0", 8000), Dummy).serve_forever()
 
 if __name__ == "__main__":
-    threading.Thread(target=run_flask).start()
-    run_bot()
+    threading.Thread(target=run_dummy).start()
+    Bot().run()
