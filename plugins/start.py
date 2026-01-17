@@ -112,48 +112,7 @@ async def start_command(client: Client, message: Message):
 
     # File auto-delete time in seconds
     FILE_AUTO_DELETE = await db.get_del_timer()
-    if FILE_DEL and FILE_DEL > 0:
-
-    note = await message.reply(
-        text=(
-            "<blockquote>"
-            f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_AUTO_DELETE)}.\n\n"
-            "Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
-            "</blockquote>"
-        ),
-        parse_mode="HTML",
-        message_effect_id=MSG_EFFECT
-    )
-
-    await asyncio.sleep(FILE_DEL)
-
-    for s in sent_msgs:
-        try:
-            await s.delete()
-        except:
-            pass
-
-    reload_url = None
-    if message.command and len(message.command) > 1:
-        reload_url = f"https://t.me/{client.username}?start={message.command[1]}"
-
-    kb = InlineKeyboardMarkup(
-        [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
-    ) if reload_url else None
-
-    await note.edit(
-        text=(
-            "<blockquote>"
-            "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n"
-            "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇"
-            "</blockquote>"
-        ),
-        reply_markup=kb,
-        parse_mode="HTML"
-        )
         
-
-    
     # NEW USER ADD
     if not await db.present_user(user_id):
         try:
@@ -214,9 +173,9 @@ async def start_command(client: Client, message: Message):
             final_caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
 
-            try:
+           try:
                 s = await msg.copy(
-                    chat_id=message.from_user.id,
+                    chat_id=user_id,
                     caption=final_caption,
                     parse_mode=ParseMode.HTML,
                     reply_markup=reply_markup,
@@ -227,14 +186,55 @@ async def start_command(client: Client, message: Message):
 
             except FloodWait as e:
                 await asyncio.sleep(e.x)
-                s = await msg.copy(
-                    chat_id=message.from_user.id,
-                    caption=final_caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
+
+        # =========================
+        # AUTO DELETE SYSTEM
+        # =========================
+
+        FILE_DEL = await db.get_del_timer()
+
+        if FILE_DEL and FILE_DEL > 0 and sent_msgs:
+
+            note = await message.reply(
+                text=(
+                    "<blockquote>"
+                    f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_DEL)}.\n\n"
+                    "Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
+                    "</blockquote>"
+                ),
+                parse_mode="HTML",
+                message_effect_id=MSG_EFFECT
+            )
+
+            await asyncio.sleep(FILE_DEL)
+
+            for s in sent_msgs:
+                try:
+                    await s.delete()
+                except:
+                    pass
+
+            reload_url = f"https://t.me/{client.username}?start={message.text.split(' ',1)[1]}"
+
+            kb = InlineKeyboardMarkup(
+                [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
+            )
+
+            try:
+                await note.edit(
+                    text=(
+                        "<blockquote>"
+                        "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n"
+                        "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇"
+                        "</blockquote>"
+                    ),
+                    reply_markup=kb,
+                    parse_mode="HTML"
                 )
-                sent_msgs.append(s)
+            except:
+                pass
+
+        return  
     
                 
     # NORMAL START MESSAGE
