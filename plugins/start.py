@@ -195,56 +195,44 @@ async def start_command(client: Client, message: Message):
                 )
                 sent_msgs.append(s)
 
-# =========================
-# AUTO DELETE SYSTEM (FIXED)
-# =========================
+    # AUTO DELETE
+        FILE_DEL = await db.get_del_timer()
+        if FILE_DEL > 0:
 
-FILE_DEL = await db.get_del_timer()
+            note = await message.reply(
+                f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.", 
+                message_effect_id=MSG_EFFECT
+            )
+            await asyncio.sleep(FILE_DEL)
 
-if FILE_DEL > 0 and sent_msgs:
+            for s in sent_msgs:
+                try:
+                    await s.delete()
+                except:
+                    pass
 
-    # Send warning under LAST FILE
-    note = await sent_msgs[-1].reply(
-        f"<blockquote>"
-        f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_DEL)}.\n\n"
-        f"Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
-        f"</blockquote>",
-        parse_mode="HTML"
-    )
+            try:
+                reload_url = (
+                    f"https://t.me/{client.username}?start={message.command[1]}"
+                    if message.command and len(message.command) > 1
+                    else None
+                )
 
-    await asyncio.sleep(FILE_DEL)
+                kb = InlineKeyboardMarkup(
+                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
+                ) if reload_url else None
 
-    # Delete files
-    for s in sent_msgs:
-        try:
-            await s.delete()
-        except:
-            pass
+                await note.edit(
+                    "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇",
+                    reply_markup=kb
+                )
 
-    # Reload button
-    reload_url = None
-    if message.command and len(message.command) > 1:
-        reload_url = f"https://t.me/{client.username}?start={message.command[1]}"
+            except Exception as e:
+                print(e)
 
-    kb = None
-    if reload_url:
-        kb = InlineKeyboardMarkup(
-            [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
-        )
+        return
 
-    # Edit warning
-    try:
-        await note.edit(
-            "<blockquote>"
-            "ʏᴏᴜʀ ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n"
-            "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ɪᴛ ᴀɢᴀɪɴ 👇"
-            "</blockquote>",
-            reply_markup=kb,
-            parse_mode="HTML"
-        )
-    except Exception as e:
-        print("Edit failed:", e) 
-
+                
     # NORMAL START MESSAGE
 
     start_markup = InlineKeyboardMarkup(
