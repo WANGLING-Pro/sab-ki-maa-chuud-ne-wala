@@ -16,7 +16,7 @@ async def is_admin_or_owner(uid: int) -> bool:
         return True
     # Admin check
     try:
-        admins = await db.get_admins()  # /add_admin se fetch
+        admins = await db.get_all_admins()  # /add_admin se fetch
         return admins and uid in admins
     except Exception:
         return False  # DB fail → consider normal user
