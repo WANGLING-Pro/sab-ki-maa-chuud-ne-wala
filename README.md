@@ -5,7 +5,7 @@
 </h2>
 
 <p align="center">
-  <img src="https://graph.org/file/4cb6c2fefaf6cbce7897c-037d8d6e8dbb3d9ed8.jpg">
+  <img src="https://image.zaw-myo.workers.dev/image/98e7ab2a-695c-4c95-a2c4-f486b464bbc8">
 </p>
 
 
@@ -62,7 +62,6 @@
 /start - start the bot or get posts  
 /batch - create link for more than one posts  
 /custom_batch - create custom batch from channel/group  
-/genlink - create link for one post  
 /users - view bot statistics  
 /broadcast - broadcast any messages to bot users  
 /dbroadcast - broadcast any messages with auto delete  
