@@ -88,90 +88,145 @@ async def short_url(client: Client, message: Message, base64_string):
 # 🔥 START COMMAND FIXED — AUTO SHORTENER DISABLED
 # =================================================================== #
 
-@Bot.on_message(filters.command('start') & filters.private)
+@Bot.on_message(filters.command("start") & filters.private)
 async def start_command(client: Client, message: Message):
 
     user_id = message.from_user.id
-    is_premium = await is_premium_user(user_id)
 
+    # ======================
     # BAN CHECK
+    # ======================
     banned_users = await db.get_ban_users()
     if user_id in banned_users:
         return await message.reply_text(
-            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
-            "<i>Contact support if you think this is a mistake.</i>",
+            "<b>⛔️ ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜsɪɴɢ ᴛʜɪs ʙᴏᴛ.</b>\n\n"
+            "<i>ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ ɪғ ʏᴏᴜ ᴛʜɪɴᴋ ᴛʜɪs ɪs ᴀ ᴍɪsᴛᴀᴋᴇ.</i>",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
+                [[InlineKeyboardButton("ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ", url=BAN_SUPPORT)]]
             )
         )
 
-    # FSUB
+    # ======================
+    # FORCE SUB
+    # ======================
     if not await is_subscribed(client, user_id):
         return await not_joined(client, message)
 
-    # File auto-delete time in seconds
-    FILE_AUTO_DELETE = await db.get_del_timer()
-        
-    # NEW USER ADD
+    # ======================
+    # ADD USER
+    # ======================
     if not await db.present_user(user_id):
         try:
             await db.add_user(user_id)
         except:
             pass
 
-    # PAYLOAD HANDLE
-    if message.text.startswith("/start ") and len(message.text.split(" ", 1)) == 2:
+    # ======================
+    # NORMAL /start (NO PAYLOAD)
+    # ======================
+    if len(message.command) == 1:
+        start_markup = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/P_World_81")],
+                [
+                    InlineKeyboardButton("•ᴀʙᴏᴜᴛ", callback_data="about"),
+                    InlineKeyboardButton("•ʜᴇʟᴘ", callback_data="help"),
+                ],
+            ]
+        )
 
-        try:
-            basic = message.text.split(" ", 1)[1]
+        return await message.reply_photo(
+            photo=START_PIC,
+            caption=START_MSG.format(
+                first=message.from_user.first_name,
+                last=message.from_user.last_name,
+                username=None if not message.from_user.username else '@' + message.from_user.username,
+                mention=message.from_user.mention,
+                id=user_id
+            ),
+            reply_markup=start_markup,
+            message_effect_id=MSG_EFFECT
+        )
 
-            # Non-premium → shortener
-            if (not is_premium) and (user_id != OWNER_ID) and (not basic.startswith("yu3elk")):
-                await short_url(client, message, basic)
-                return
+    # ======================
+    # PAYLOAD MODE
+    # ======================
 
-            # premium
-            base64_string = basic[6:-1] if basic.startswith("yu3elk") else basic
+    is_premium = await is_premium_user(user_id)
 
-        except Exception as e:
-            print(f"Error payload: {e}")
+    try:
+        payload = message.command[1]
+
+        # Non premium -> shortener
+        if (not is_premium) and (user_id != OWNER_ID) and (not payload.startswith("yu3elk")):
+            await short_url(client, message, payload)
             return
 
-        # Decode
-        string = await decode(base64_string)
-        args = string.split("-")
+        # unwrap premium wrapper
+        base64_string = payload[6:-1] if payload.startswith("yu3elk") else payload
+
+        decoded = await decode(base64_string)
+        args = decoded.split("-")
 
         ids = []
+
+        if len(args) == 3:
+            start = int(int(args[1]) / abs(client.db_channel.id))
+            end = int(int(args[2]) / abs(client.db_channel.id))
+            step = 1 if start <= end else -1
+            ids = list(range(start, end + step, step))
+
+        elif len(args) == 2:
+            ids = [int(int(args[1]) / abs(client.db_channel.id))]
+
+        else:
+            return await message.reply("❌ Invalid or expired link.")
+
+    except Exception as e:
+        print("Payload error:", e)
+        return await message.reply("❌ Invalid or expired link.")
+
+    # ======================
+    # FETCH FILES
+    # ======================
+
+    temp = await message.reply("<b>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ... ғᴇᴛᴄʜɪɴɢ ғɪʟᴇs...</b>")
+
+    try:
+        msgs = await get_messages(client, ids)
+    except Exception as e:
+        print("Get messages error:", e)
+        await temp.delete()
+        return await message.reply("❌ ғɪʟᴇ ɴᴏᴛ ғᴏᴜɴᴅ!")
+    finally:
         try:
-            if len(args) == 3:
-                start = int(int(args[1]) / abs(client.db_channel.id))
-                end = int(int(args[2]) / abs(client.db_channel.id))
-                ids = range(start, end + 1) if start <= end else range(start, end - 1, -1)
-
-            elif len(args) == 2:
-                ids = [int(int(args[1]) / abs(client.db_channel.id))]
-
-        except Exception as e:
-            print(f"Error decode id: {e}")
-            return
-
-        temp = await message.reply("<b>Please wait...</b>")
-
-        try:
-            msgs = await get_messages(client, ids)
-        except:
-            await message.reply("Something went wrong!")
-            return
-        finally:
             await temp.delete()
+        except:
+            pass
 
-        sent_msgs = []
+    sent_msgs = []
 
-        for msg in msgs:
-            original_caption = msg.caption.html if msg.caption else ""
-            final_caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
-            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+    for msg in msgs:
+        if not msg or msg.empty:
+            continue
 
+        original_caption = msg.caption.html if msg.caption else ""
+        final_caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
+        reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+
+        try:
+            s = await msg.copy(
+                chat_id=user_id,
+                caption=final_caption,
+                parse_mode=ParseMode.HTML,
+                reply_markup=reply_markup,
+                protect_content=PROTECT_CONTENT
+            )
+            sent_msgs.append(s)
+            await asyncio.sleep(0.4)
+
+        except FloodWait as e:
+            await asyncio.sleep(e.x)
             try:
                 s = await msg.copy(
                     chat_id=user_id,
@@ -180,81 +235,58 @@ async def start_command(client: Client, message: Message):
                     reply_markup=reply_markup,
                     protect_content=PROTECT_CONTENT
                 )
-                await asyncio.sleep(0.5)
                 sent_msgs.append(s)
-
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-                
-        # =========================
-        # AUTO DELETE SYSTEM
-        # =========================
-
-        FILE_DEL = await db.get_del_timer()
-        print("AUTO DELETE CHECK:", FILE_DEL, sent_msgs)
-
-        if FILE_DEL and FILE_DEL > 0 and sent_msgs:
-
-            note = await message.reply(
-    text=(
-        f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_DEL)}. "
-        "Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
-    ),
-    message_effect_id=MSG_EFFECT
-            )
-            await asyncio.sleep(FILE_DEL)
-
-            for s in sent_msgs:
-                try:
-                    await s.delete()
-                except:
-                    pass
-
-            reload_url = f"https://t.me/{client.username}?start={message.text.split(' ',1)[1]}"
-
-            kb = InlineKeyboardMarkup(
-                [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
-            )
-
-            try:
-                await note.edit(
-    text=(
-        "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n"
-        "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇"
-    ),
-    reply_markup=kb
-        )
             except:
                 pass
 
-        return  
-    
+        except Exception as e:
+            print("Copy error:", e)
+            continue
+
+    # ======================
+    # AUTO DELETE SYSTEM
+    # ======================
+
+    FILE_DEL = await db.get_del_timer()
+
+    if FILE_DEL and FILE_DEL > 0 and sent_msgs:
+
+        note = await message.reply(
+            text=(
+                f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_DEL)}. "
+                "Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
+            ),
+            message_effect_id=MSG_EFFECT
+        )
+
+        await asyncio.sleep(FILE_DEL)
+
+        for s in sent_msgs:
+            try:
+                await s.delete()
+            except:
+                pass
+
+        reload_url = f"https://t.me/{client.username}?start={message.command[1]}"
+
+        kb = InlineKeyboardMarkup(
+            [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
+        )
+
+        try:
+            await note.edit(
+                text=(
+                    "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n"
+                    "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇"
+                ),
+                reply_markup=kb
+            )
+        except:
+            pass
+
+    return    
                 
-    # NORMAL START MESSAGE
-
-    start_markup = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/P_World_81")],
-            [
-                InlineKeyboardButton("•ᴀʙᴏᴜᴛ", callback_data="about"),
-                InlineKeyboardButton("•ʜᴇʟᴘ", callback_data="help"),
-            ],
-        ]
-    )
-
-    await message.reply_photo(
-        photo=START_PIC,
-        caption=START_MSG.format(
-            first=message.from_user.first_name,
-            last=message.from_user.last_name,
-            username=None if not message.from_user.username else '@' + message.from_user.username,
-            mention=message.from_user.mention,
-            id=message.from_user.id
-        ),
-        reply_markup=start_markup,
-        message_effect_id=MSG_EFFECT
-    )
-
+    
 
 # Note: Make sure helper_func.py has 'not_joined' function defined or imported.
 # Agar 'not_joined' error de, to use 'start.py' ke andar define karna padega ya import karna padega.
