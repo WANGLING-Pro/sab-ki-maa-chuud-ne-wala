@@ -5,9 +5,9 @@ from bot import Bot
 import asyncio
 from helper_func import encode, admin
 
-# =========================================================
+# ============================================================================================#
 # ✅ /batch — Any Channel Batch (Bot must be admin)
-# =========================================================
+# ============================================================================================#
 
 @Bot.on_message(filters.private & admin & filters.command('batch'))
 async def batch(client: Client, message: Message):
@@ -131,3 +131,64 @@ async def batch(client: Client, message: Message):
         )
     except Exception as e:
         print("Failed to attach button to DB last message:", e)
+
+
+
+# ============================================================================================#
+# ✅ /custom_batch — Any Channel Batch (Bot must be admin)
+# ============================================================================================#
+
+@Bot.on_message(filters.private & admin & filters.command("custom_batch"))
+async def custom_batch(client: Client, message: Message):
+    collected = []
+    STOP_KEYBOARD = ReplyKeyboardMarkup([["STOP"]], resize_keyboard=True)
+
+    await message.reply("Send all messages you want to include in batch.\n\nPress STOP when you're done.", reply_markup=STOP_KEYBOARD)
+
+    while True:
+        try:
+            user_msg = await client.ask(
+                chat_id=message.chat.id,
+                text="Waiting for files/messages...\nPress STOP to finish.",
+                timeout=60
+            )
+        except asyncio.TimeoutError:
+            break
+
+        if user_msg.text and user_msg.text.strip().upper() == "STOP":
+            break
+try:
+            sent = await user_msg.copy(client.db_channel.id, disable_notification=True)
+            collected.append(sent.id)
+        except Exception as e:
+            await message.reply(f"❌ Failed to store a message:\n<code>{e}</code>")
+            continue
+
+    await message.reply("✅ Batch collection complete.", reply_markup=ReplyKeyboardRemove())
+
+    if not collected:
+        await message.reply("❌ No messages were added to batch.")
+        return
+
+    start_id = collected[0] * abs(client.db_channel.id)
+    end_id = collected[-1] * abs(client.db_channel.id)
+    string = f"get-{start_id}-{end_id}"
+    base64_string = await encode(string)
+    link = f"https://t.me/{client.username}?start={base64_string}"
+
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+    await message.reply(f"<b>Here is your custom batch link:-</b>\n\n{link}", reply_markup=reply_markup)
+    
+@Bot.on_message(filters.command(["getlink", "get"]) & filters.private)
+async def getlink_handler(client, message):
+
+    if not message.reply_to_message:
+        return await message.reply("⚠️ Reply to ANY message to generate link.")
+
+    msg = message.reply_to_message
+    msg_id = msg.id
+
+    base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
+    link = f"https://t.me/{client.username}?start={base64_string}"
+
+    await message.reply(f"Here is your link:-\n\n{link}")
