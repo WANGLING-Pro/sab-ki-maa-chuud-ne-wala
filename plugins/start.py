@@ -32,7 +32,7 @@ TUT_VID = f"{TUT_VID}"
 
 API_URL = os.getenv("API_URL", "").rstrip("/")
 if not API_URL:
-    raise ValueError("⚠️ Missing 'API_URL' in Render environment variables!")
+    raise ValueError("⚠️ Missing 'API_URL' in environment variables!")
 
 
 async def get_total_clicks(user_id, link):
@@ -79,11 +79,10 @@ async def short_url(client: Client, message: Message, base64_string):
 
     except Exception as e:
         import traceback
-        traceback.print_exc() 
+        traceback.print_exc()
         print(f"❌ Error in short_url: {e}")
-        # Ye line bot par asli error message degi
         await message.reply_text(f"⚠️ Error Details:\n`{e}`")
-
+        
 
 # =================================================================== #
 # 🔥 START COMMAND FIXED — AUTO SHORTENER DISABLED
