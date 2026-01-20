@@ -16,22 +16,19 @@ async def batch(client: Client, message: Message):
     while True:
         try:
             first_message = await client.ask(
-    chat_id=message.from_user.id,
-    text=(
-        "<blockquote>"
-        "Forward The Batch First Message From your Batch Channel (With Forward Tag)\n\n"
-        "OR\n\n"
-        "Give Me Batch First Message Link from your Batch Channel"
-        "</blockquote>"
-    ),
-    filters=filters.forwarded,
-    timeout=60
+                chat_id=message.from_user.id,
+                text=(
+                    "<blockquote>"
+                    "ғᴏʀᴡᴀʀᴅ ᴛʜᴇ ʙᴀᴛᴄʜ ғɪʀsᴛ ᴍᴇssᴀɢᴇ ғʀᴏᴍ ʏᴏᴜʀ ʙᴀᴛᴄʜ ᴄʜᴀɴɴᴇʟ (𝑤𝑖𝑡ℎ 𝑓𝑜𝑟𝑤𝑎𝑟𝑑 𝑡𝑎𝑔) Oʀ ɢɪᴠᴇ ᴍᴇ ʙᴀᴛᴄʜ ғɪʀsᴛ ᴍᴇssᴀɢᴇ ʟɪɴᴋ ғʀᴏᴍ ʏᴏᴜʀ ʙᴀᴛᴄʜ ᴄʜᴀɴɴᴇʟ....ᴏʀ ʜᴀᴀ ᴊᴀʟᴅɪ ᴅᴇ sᴀᴍᴊᴀ."
+                    "</blockquote>"
+                ),
+                timeout=60
             )
         except:
             return
 
         if not first_message.forward_from_chat:
-            await first_message.reply("❌ Forward a real channel post.")
+            await first_message.reply("ʀᴇᴀʟ ᴄʜᴀɴɴᴇʟ ᴋɪ ᴘᴏsᴛ ᴅᴇ ʙᴇ.")
             continue
 
         source_chat_id = first_message.forward_from_chat.id
@@ -42,26 +39,23 @@ async def batch(client: Client, message: Message):
     while True:
         try:
             second_message = await client.ask(
-    chat_id=message.from_user.id,
-    text=(
-        "<blockquote>"
-        "Forward The Batch Last Message From your Batch Channel (With Forward Tag)\n\n"
-        "OR\n\n"
-        "Give Me Batch Last Message Link from your Batch Channel"
-        "</blockquote>"
-    ),
-    filters=filters.forwarded,
-    timeout=60
+                chat_id=message.from_user.id,
+                text=(
+                    "<blockquote>"
+                    "ғᴏʀᴡᴀʀᴅ ᴛʜᴇ ʙᴀᴛᴄʜ ʟᴀsᴛ ᴍᴇssᴀɢᴇ ғʀᴏᴍ ʏᴏᴜʀ ʙᴀᴛᴄʜ ᴄʜᴀɴɴᴇʟ (𝑤𝑖𝑡ℎ 𝑓𝑜𝑟𝑤𝑎𝑟𝑑 𝑡𝑎𝑔) Oʀ ɢɪᴠᴇ ᴍᴇ ʙᴀᴛᴄʜ ʟᴀsᴛ ᴍᴇssᴀɢᴇ ʟɪɴᴋ ғʀᴏᴍ ʏᴏᴜʀ ʙᴀᴛᴄʜ ᴄʜᴀɴɴᴇʟ....ᴏʀ ʜᴀᴀ ᴊᴀʟᴅɪ ᴅᴇ sᴀᴍᴊᴀ."
+                    "</blockquote>"
+                ),
+                timeout=60
             )
         except:
             return
 
         if not second_message.forward_from_chat:
-            await second_message.reply("❌ Forward a real channel post.")
+            await second_message.reply("ʀᴇᴀʟ ᴄʜᴀɴɴᴇʟ ᴋɪ ᴘᴏsᴛ ᴅᴇ ʙᴇ.")
             continue
 
         if second_message.forward_from_chat.id != source_chat_id:
-            await second_message.reply("❌ Both messages must be from SAME channel.")
+            await second_message.reply("ʙᴏᴛʜ ᴍᴇssᴀɢᴇs ᴍᴜsᴛ ʙᴇ ғʀᴏᴍ sᴀᴍᴇ ᴄʜᴀɴɴᴇʟ.")
             continue
 
         s_msg_id = second_message.forward_from_message_id
@@ -71,12 +65,12 @@ async def batch(client: Client, message: Message):
     try:
         member = await client.get_chat_member(source_chat_id, "me")
         if not member.privileges:
-            return await message.reply("❌ Bot is not admin in this channel.")
+            return await message.reply("ʙᴏᴛ ᴋᴏ ᴀᴅᴍɪɴ ᴛᴏ ʙᴀᴀɴ ᴅᴇ ᴘᴇʜʟᴇ ᴄʜᴜᴛɪʏᴀ.")
     except:
-        return await message.reply("❌ Bot is not in this channel.")
+        return await message.reply("ʙᴏᴛ ᴋᴏ ᴀᴅᴍɪɴ ᴛᴏ ʙᴀᴀɴ ᴅᴇ ᴘᴇʜʟᴇ ᴄʜᴜᴛɪʏᴀ.")
 
     # Step 4: Copy messages to DB
-    await message.reply("⏳ Copying messages to DB...")
+    status = await message.reply("⏳ ᴍᴇssᴀɢᴇs ᴄᴏᴘʏ ʜᴏ ʀᴀʜᴀ ʜᴀɪ ᴡᴀɪᴛ ᴋᴀʀ ʙᴇ...")
 
     new_ids = []
 
@@ -99,10 +93,16 @@ async def batch(client: Client, message: Message):
         except:
             continue
 
-    if not new_ids:
-        return await message.reply("❌ No messages could be copied.")
+    # ✅ DELETE ONLY STATUS MESSAGE
+    try:
+        await status.delete()
+    except:
+        pass
 
-    # Step 5: Generate link from DB IDs
+    if not new_ids:
+        return await message.reply("❌ ᴋᴏɪ ᴍᴇssᴀɢᴇs ᴄᴏᴘʏ ɴʜɪ ʜᴜᴀ ᴀʙ ɢᴀɴᴅ ᴅᴇ ᴄʜᴀᴀʟ...")
+
+    # Step 5: Generate link
     db_id = abs(client.db_channel.id)
     start_id = new_ids[0] * db_id
     end_id = new_ids[-1] * db_id
@@ -116,26 +116,21 @@ async def batch(client: Client, message: Message):
         [[InlineKeyboardButton("🔁 Share URL", url=f"https://telegram.me/share/url?url={link}")]]
     )
 
-    # ✅ 1) Send in bot chat
-    await message.reply(
-        f"Here is your link:-\n\n{link}",
-        reply_markup=reply_markup
-    )
+    await message.reply(f"Here is your link:-\n\n{link}", reply_markup=reply_markup)
 
-    # ✅ 2) Attach same button to LAST DB message (PERMANENT BACKUP)
+    # Attach button to last DB message
     try:
         await client.edit_message_reply_markup(
             chat_id=client.db_channel.id,
             message_id=new_ids[-1],
             reply_markup=reply_markup
         )
-    except Exception as e:
-        print("Failed to attach button to DB last message:", e)
-
+    except:
+        pass
 
 
 # ============================================================================================#
-# ✅ /custom_batch — Any Channel Batch (Bot must be admin)
+# ✅ /custom_batch
 # ============================================================================================#
 
 @Bot.on_message(filters.private & admin & filters.command("custom_batch"))
@@ -143,13 +138,16 @@ async def custom_batch(client: Client, message: Message):
     collected = []
     STOP_KEYBOARD = ReplyKeyboardMarkup([["STOP"]], resize_keyboard=True)
 
-    await message.reply("Send all messages you want to include in batch.\n\nPress STOP when you're done.", reply_markup=STOP_KEYBOARD)
+    await message.reply(
+        "Send all messages you want to include in batch.\n\nPress STOP when you're done.",
+        reply_markup=STOP_KEYBOARD
+    )
 
     while True:
         try:
             user_msg = await client.ask(
                 chat_id=message.chat.id,
-                text="Waiting for files/messages...\nPress STOP to finish.",
+                text="ᴡᴀɪᴛ ᴋᴀʀ ʀᴀʜᴇ ʜᴀɪ ғɪʟᴇs/ᴍᴇssᴀɢᴇs...\nᴘʀᴇss sᴛᴏᴘ ᴀɢᴀʀ ᴛᴜᴍʀᴀ ᴍᴀᴀʟ ɴɪᴋᴀʟ ɢᴀʏᴀ ᴛᴏ.",
                 timeout=60
             )
         except asyncio.TimeoutError:
@@ -157,28 +155,39 @@ async def custom_batch(client: Client, message: Message):
 
         if user_msg.text and user_msg.text.strip().upper() == "STOP":
             break
-try:
+
+        try:
             sent = await user_msg.copy(client.db_channel.id, disable_notification=True)
             collected.append(sent.id)
-        except Exception as e:
-            await message.reply(f"❌ Failed to store a message:\n<code>{e}</code>")
+        except FloodWait as e:
+            await asyncio.sleep(e.x)
+        except:
             continue
 
-    await message.reply("✅ Batch collection complete.", reply_markup=ReplyKeyboardRemove())
+    await message.reply("✅ ʙᴀᴛᴄʜ ᴄᴏʟʟᴇᴄᴛɪᴏɴ ᴄᴏᴍᴘʟᴇᴛᴇ ᴄʜᴀʟ ᴀʙ ɢᴀɴᴅ ᴅᴇ.", reply_markup=ReplyKeyboardRemove())
 
     if not collected:
-        await message.reply("❌ No messages were added to batch.")
-        return
+        return await message.reply("❌ ᴇᴋᴀ ʙʜɪ ᴍᴇssᴀɢᴇs ʙᴀᴛᴄʜ ᴍᴇ ɴʜɪ ᴅᴀᴀʟ ᴘᴀʏᴀ ᴍᴇ.")
 
     start_id = collected[0] * abs(client.db_channel.id)
     end_id = collected[-1] * abs(client.db_channel.id)
+
     string = f"get-{start_id}-{end_id}"
     base64_string = await encode(string)
+
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
-    await message.reply(f"<b>Here is your custom batch link:-</b>\n\n{link}", reply_markup=reply_markup)
-    
+    reply_markup = InlineKeyboardMarkup(
+        [[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]]
+    )
+
+    await message.reply(f"<b>Here is your link:-</b>\n\n{link}", reply_markup=reply_markup)
+
+
+# ============================================================================================#
+# ✅ /getlink
+# ============================================================================================#
+
 @Bot.on_message(filters.command(["getlink", "get"]) & filters.private)
 async def getlink_handler(client, message):
 
