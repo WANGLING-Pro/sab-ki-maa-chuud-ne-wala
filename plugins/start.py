@@ -288,107 +288,115 @@ async def start_command(client: Client, message: Message):
                 
     
 
-# Note: Make sure helper_func.py has 'not_joined' function defined or imported.
-# Agar 'not_joined' error de, to use 'start.py' ke andar define karna padega ya import karna padega.
-async def not_joined(client, message):
-    buttons = [
-        [InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink)],
-        [InlineKeyboardButton(text="ᴛʀʏ ᴀɢᴀɪɴ", url=f"https://t.me/{client.username}?start={message.command[1]}")]
-    ]
-    try:
-        buttons.append([InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2)])
-    except: pass
-    
-    await message.reply(
-        text="<blockquote expandable>ʏᴏᴜ ᴍᴜsᴛ ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴀᴄᴄᴇss ᴛʜɪs ғɪʟᴇ.</blockquote>",
-        reply_markup=InlineKeyboardMarkup(buttons)
-    )
-
-# =================================================================== #
-# 🔥 not_joined()
-# =================================================================== #
+#•••••••••••••••••••••••••••••••••••••••••••••••••••• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •••••••••••••••••••••••••••••••••••••••••#
+from datetime import datetime, timedelta
+from pyrogram.enums import ChatMemberStatus
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 chat_data_cache = {}
 
-
 async def not_joined(client: Client, message: Message):
 
-    temp = await message.reply("<b><i>ᴄʜᴇᴄᴋɪɴɢ sᴜʙsᴄʀɪᴘᴛɪᴏɴ...</i></b>")
     uid = message.from_user.id
 
+    # Payload for Try Again button
+    payload = None
+    if message.command and len(message.command) > 1:
+        payload = message.command[1]
+
+    temp = await message.reply("<b><i>ᴄʜᴇᴄᴋɪɴɢ sᴜʙsᴄʀɪᴘᴛɪᴏɴ...</i></b>")
+
     buttons = []
-    count = 0
 
     try:
         channels = await db.show_channels()
 
         for chat_id in channels:
+            # Check membership
+            try:
+                member = await client.get_chat_member(chat_id, uid)
+                if member.status in (
+                    ChatMemberStatus.MEMBER,
+                    ChatMemberStatus.ADMINISTRATOR,
+                    ChatMemberStatus.OWNER
+                ):
+                    continue
+            except:
+                pass
+
+            # Cache chat
+            if chat_id not in chat_data_cache:
+                chat_data_cache[chat_id] = await client.get_chat(chat_id)
+
+            chat = chat_data_cache[chat_id]
             mode = await db.get_channel_mode(chat_id)
 
-            if not await is_sub(client, uid, chat_id):
-
-                try:
-                    if chat_id not in chat_data_cache:
-                        chat_data_cache[chat_id] = await client.get_chat(chat_id)
-
-                    data = chat_data_cache[chat_id]
-
-                    if mode == "on" and not data.username:
-                        invite = await client.create_chat_invite_link(
-                            chat_id=chat_id,
-                            creates_join_request=True,
-                            expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY)
-                        )
-                        link = invite.invite_link
-                    else:
-                        if data.username:
-                            link = f"https://t.me/{data.username}"
-                        else:
-                            invite = await client.create_chat_invite_link(
-                                chat_id=chat_id,
-                                expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY)
-                            )
-                            link = invite.invite_link
-
-                    buttons.append([InlineKeyboardButton(text=data.title, url=link)])
-                    count += 1
-                    await temp.edit(f"<b>{'! ' * count}</b>")
-
-                except Exception as e:
-                    print(e)
-                    return await temp.edit(
-                        f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @I_am_nerev_die</i></b>\n"
-            f"<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>"
-)
-        # Try Again
-        try:
-            buttons.append(
-                [
-                    InlineKeyboardButton(
-                        "♻️ Try Again",
-                        url=f"https://t.me/{client.username}?start={message.command[1]}"
+            # Generate link
+            if chat.username:
+                link = f"https://t.me/{chat.username}"
+            else:
+                if mode == "on":
+                    invite = await client.create_chat_invite_link(
+                        chat_id=chat_id,
+                        creates_join_request=True,
+                        expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY)
                     )
-                ]
-            )
-        except:
-            pass
+                else:
+                    invite = await client.create_chat_invite_link(
+                        chat_id=chat_id,
+                        expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY)
+                    )
+                link = invite.invite_link
+
+            buttons.append([
+                InlineKeyboardButton(text=f"ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ {chat.title}", url=link)
+            ])
+
+        # Try again button
+        if payload:
+            retry_url = f"https://t.me/{client.username}?start={payload}"
+        else:
+            retry_url = f"https://t.me/{client.username}"
+
+        buttons.append([
+            InlineKeyboardButton("♻️ ᴛʀʏ ᴀɢᴀɪɴ", url=retry_url)
+        ])
+
+        await temp.delete()
 
         await message.reply_photo(
-            FORCE_PIC,
-            caption=FORCE_MSG.format(
-                first=message.from_user.first_name,
-                last=message.from_user.last_name,
-                username=None if not message.from_user.username else '@' + message.from_user.username,
-                mention=message.from_user.mention,
-                id=message.from_user.id
+            photo=FORCE_PIC,
+            caption=(
+                "<blockquote expandable>"
+                "ʏᴏᴜ ᴍᴜsᴛ ᴊᴏɪɴ ᴀʟʟ ʀᴇǫᴜɪʀᴇᴅ ᴄʜᴀɴɴᴇʟs ᴛᴏ ᴀᴄᴄᴇss ᴛʜɪs ғɪʟᴇ.\n\n"
+                "ᴊᴏɪɴ ᴀʟʟ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʜᴇɴ ᴄʟɪᴄᴋ \"Try Again\"."
+                "</blockquote>"
             ),
             reply_markup=InlineKeyboardMarkup(buttons),
             message_effect_id=MSG_EFFECT
         )
-        
+
     except Exception as e:
-        print(e)
-        await temp.edit(f"<b>Error Occurred:</b> {e}")
+        print("FSUB ERROR:", e)
+
+        # Owner ko notify kar
+        try:
+            await client.send_message(
+                OWNER_ID,
+                f"⚠️ FSUB ERROR:\n<code>{e}</code>"
+            )
+        except:
+            pass
+
+        try:
+            await temp.edit(
+                f"<blockquote expandable><b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @I_am_nerev_die</i></b></blockquote>\n"
+            f"<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>"
+            )
+        except:
+            pass
+
+
 
 # =================================================================== #
 # 🔥 Premium + Commands + Count (UNCHANGED)
