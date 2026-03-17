@@ -51,7 +51,7 @@ async def set_delete_time(client: Bot, message: Message):
         await db.set_del_timer(duration)
 
         await message.reply(
-            f"<b>Dᴇʟᴇᴛᴇ Tɪᴍᴇʀ sᴇᴛ ᴛᴏ <blockquote>{duration} seconds</blockquote></b>"
+            f"<b>Dᴇʟᴇᴛᴇ Tɪᴍᴇʀ ʜᴀs ʙᴇᴇɴ sᴇᴛ ᴛᴏ <blockquote>{duration} seconds</blockquote></b>"
         )
 
     except (IndexError, ValueError):
@@ -66,7 +66,7 @@ async def check_delete_time(client: Bot, message: Message):
         duration = await db.get_del_timer()
 
         await message.reply(
-            f"<b><blockquote>Cᴜʀʀᴇɴᴛ ᴛɪᴍᴇʀ: {duration} seconds</blockquote></b>"
+            f"<b><blockquote>Cᴜʀʀᴇɴᴛ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ɪs sᴇᴛ ᴛᴏ: {duration} seconds</blockquote></b>"
         )
     except Exception as e:
         await message.reply(f"❌ Error:\n<code>{e}</code>")
