@@ -1,10 +1,18 @@
 FROM python:3.10-slim
+
+# Prevent Python from writing pyc files & enable logs
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+# Install dependencies first (cache optimization)
+COPY requirements.txt .
 
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project files
 COPY . .
 
-CMD python3 main.py
-
+# Start bot
+CMD ["python", "main.py"]
