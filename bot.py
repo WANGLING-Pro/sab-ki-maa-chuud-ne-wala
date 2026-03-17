@@ -1,16 +1,3 @@
-
-# Don't Remove Credit @P_world_81, @i_am_nerev_die
-# Ask Doubt on telegram @Upcoming
-#
-# Copyright (C) 2025 by WANGLING-Pro@Github, < https://github.com/WANGLING-Pro >.
-#
-# This file is part of < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala > project,
-# and is released under the MIT License.
-# Please see < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala/new/Shortner >
-#
-# All rights reserved.
-#
-
 from aiohttp import web
 from plugins import web_server
 import asyncio
@@ -20,117 +7,113 @@ from pyrogram.enums import ParseMode
 import sys
 import pytz
 from datetime import datetime
-#rohit_1888 on Tg
 from config import *
 from database.db_premium import *
-from database.database import *
+from database.database import db
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import logging
 
-# Suppress APScheduler logs below WARNING level
-logging.getLogger("apscheduler").setLevel(logging.WARNING)
+# ================= LOGGING =================
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
+# ================= SCHEDULER =================
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
-scheduler.add_job(remove_expired_users, "interval", seconds=10)
 
-# Reset verify count for all users daily at 00:00 IST
+# ⚠️ FIXED: DB spam avoid
+scheduler.add_job(remove_expired_users, "interval", minutes=5)
+
 async def daily_reset_task():
     try:
         await db.reset_all_verify_counts()
-    except Exception:
-        pass  
+    except Exception as e:
+        logger.error(f"Reset error: {e}")
 
-scheduler.add_job(daily_reset_task, "cron", hour=0, minute=0, max_instances=3)
-#scheduler.start()
+scheduler.add_job(daily_reset_task, "cron", hour=0, minute=0)
 
 
-name ="""
- BY WANGLING BOTS
-"""
-
-def get_indian_time():
-    """Returns the current time in IST."""
-    ist = pytz.timezone("Asia/Kolkata")
-    return datetime.now(ist)
-
+# ================= BOT CLASS =================
 class Bot(Client):
     def __init__(self):
         super().__init__(
             name="Bot",
             api_hash=API_HASH,
             api_id=APP_ID,
-            plugins={
-                "root": "plugins"
-            },
+            plugins={"root": "plugins"},
             workers=TG_BOT_WORKERS,
             bot_token=TG_BOT_TOKEN
         )
-        self.LOGGER = LOGGER
 
     async def start(self):
         await super().start()
         scheduler.start()
-        usr_bot_me = await self.get_me()
-        self.uptime = datetime.now()
 
+        self.uptime = datetime.now()
+        me = await self.get_me()
+        self.username = me.username
+
+        # ================= DB CHANNEL CHECK =================
         try:
-            db_channel = await self.get_chat(CHANNEL_ID)
-            self.db_channel = db_channel
-            test = await self.send_message(chat_id = db_channel.id, text = "Test Message")
+            self.db_channel = await self.get_chat(CHANNEL_ID)
+            test = await self.send_message(self.db_channel.id, "Test")
             await test.delete()
         except Exception as e:
-            self.LOGGER(__name__).warning(e)
-            self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
-            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/P_World_81 for support")
+            logger.error(f"DB Channel Error: {e}")
+            logger.error("Bot stopped. Check CHANNEL_ID or bot admin status.")
             sys.exit()
 
         self.set_parse_mode(ParseMode.HTML)
-        self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/P_World_81")
-        self.LOGGER(__name__).info(f"""       
 
+        # ================= ASCII + BRAND =================
+        logger.info(f"""
+⠛⠛⣿⣿⣿⣿⣿⡷⢶⣦⣶⣶⣤⣤⣤⣀⠀⠀⠀
+⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡀⠀
+⠀⠀⠀⠉⠉⠉⠙⠻⣿⣿⠿⠿⠛⠛⠛⠻⣿⣿⣇⠀
+⠀⠀⢤⣀⣀⣀⠀⠀⢸⣷⡄⠀⣁⣀⣤⣴⣿⣿⣿⣆
+⠀⠀⠀⠀⠹⠏⠀⠀⠀⣿⣧⠀⠹⣿⣿⣿⣿⣿⡿⣿
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠿⠇⢀⣼⣿⣿⠛⢯⡿⡟
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠦⠴⢿⢿⣿⡿⠷⠀⣿⠀
+⠀⠀⠀⠀⠀⠀⠀⠙⣷⣶⣶⣤⣤⣤⣤⣤⣶⣦⠃⠀
+⠀⠀⠀⠀⠀⠀⠀⢐⣿⣾⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠈⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠻⢿⣿⣿⣿⣿⠟⠁
 
-  ___ ___  ___  ___ ___ _    _____  _____  ___ _____ ___ 
- / __/ _ \|   \| __| __| |  |_ _\ \/ / _ )/ _ \_   _/ __|
-| (_| (_) | |) | _|| _|| |__ | | >  <| _ \ (_) || | \__ \
- \___\___/|___/|___|_| |____|___/_/\_\___/\___/ |_| |___/
-                                                         
- 
-                                          """)
+🚀 Bot Running..! Made by @P_world_81
+""")
 
-        self.set_parse_mode(ParseMode.HTML)
-        self.username = usr_bot_me.username
-        self.LOGGER(__name__).info(f"Bot Running..! Made by @P_world_81")   
+        logger.info(f"Bot started as @{self.username}")
 
-        # Start Web Server
-        app = web.AppRunner(await web_server())
-        await app.setup()
-      #  await web.TCPSite(app, "0.0.0.0", PORT).start()
+        # ================= WEB SERVER =================
+        try:
+            app = web.AppRunner(await web_server())
+            await app.setup()
+            await web.TCPSite(app, "0.0.0.0", PORT).start()
+            logger.info(f"Web server running on port {PORT}")
+        except Exception as e:
+            logger.error(f"Web server error: {e}")
 
-
-        try: await self.send_message(OWNER_ID, text = f"<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @p_world_81🔞</blockquote></b>")
-        except: pass
+        # ================= OWNER NOTIFY =================
+        try:
+            await self.send_message(
+                OWNER_ID,
+                "<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @p_world_81🔞</blockquote></b>"
+            )
+        except Exception:
+            pass
 
     async def stop(self, *args):
         await super().stop()
-        self.LOGGER(__name__).info("Bot stopped.")
+        logger.info("Bot stopped.")
 
     def run(self):
-        """Run the bot."""
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.start())
-        self.LOGGER(__name__).info("Bot is now running. Thanks to @I_am_nerev_die")
+
+        logger.info("Bot is now running. Thanks to @I_am_nerev_die")
+
         try:
             loop.run_forever()
         except KeyboardInterrupt:
-            self.LOGGER(__name__).info("Shutting down...")
+            logger.info("Shutting down...")
         finally:
             loop.run_until_complete(self.stop())
-
-#
-# Copyright (C) 2025 by WANGLING-Pro@Github, < https://github.com/WANGLING-Pro >.
-#
-# This file is part of < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala > project,
-# and is released under the MIT License.
-# Please see < https://github.com/WANGLING-Pro/sab-ki-maa-chuud-ne-wala/new/Shortner >
-#
-# All rights reserved.
