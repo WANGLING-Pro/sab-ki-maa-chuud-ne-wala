@@ -1,6 +1,6 @@
 import threading
 import os
-from click_counter import click_app
+# from click_counter import click_app
 from bot import Bot
 
 def run_flask():
