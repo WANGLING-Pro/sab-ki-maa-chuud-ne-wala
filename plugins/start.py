@@ -19,7 +19,7 @@ from bot import Bot
 from config import *
 from config import MSG_EFFECT
 from helper_func import *
-from database.database import *
+from database.database import db
 from database.db_premium import *
 
 
