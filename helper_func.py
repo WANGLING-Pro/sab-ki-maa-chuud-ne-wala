@@ -11,7 +11,7 @@ from config import *
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from shortzy import Shortzy
 from pyrogram.errors import FloodWait
-from database.database import *
+from database.database import db
 
 
 
