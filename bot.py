@@ -83,8 +83,29 @@ class Bot(Client):
         logger.info(f"Bot started as @{self.username}")
 
         # ================= WEB SERVER =================
+    
+    try:
+    app = web.AppRunner(await web_server())
+    await app.setup()
 
+    port = int(PORT)
 
+    try:
+        site = web.TCPSite(app, "0.0.0.0", port)
+        await site.start()
+        logger.info(f"Web server running on port {port}")
+
+    except OSError:
+        logger.warning(f"Port {port} busy, trying fallback...")
+
+        port += 1
+        site = web.TCPSite(app, "0.0.0.0", port)
+        await site.start()
+
+        logger.info(f"Web server running on fallback port {port}")
+
+except Exception as e:
+    logger.error(f"Web server failed: {e}")
         
         # ================= OWNER NOTIFY =================
         try:
