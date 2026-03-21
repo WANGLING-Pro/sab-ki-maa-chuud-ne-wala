@@ -84,7 +84,7 @@ class Bot(Client):
         logger.info(f"Bot started as @{self.username}")
 
         # ================= WEB SERVER =================
-        try:
+    try:
     app = web.AppRunner(await web_server())
     await app.setup()
 
@@ -105,7 +105,7 @@ class Bot(Client):
         logger.info(f"Web server running on fallback port {port}")
 
 except Exception as e:
-    logger.error(f"Web server failed completely: {e}")
+    logger.error(f"Web server failed: {e}")
 
         # ================= OWNER NOTIFY =================
         try:
