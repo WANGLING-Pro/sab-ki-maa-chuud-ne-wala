@@ -21,7 +21,7 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, Invit
 from bot import Bot
 from config import *
 from helper_func import *
-from database.database import *
+from database.database import db
 
 # Request force sub mode commad,,,,,,
 @Bot.on_message(filters.command('fsub_mode') & filters.private & admin)
