@@ -93,22 +93,21 @@ async def start_command(client: Client, message: Message):
 
     user_id = message.from_user.id
 
-    # ======================
-    # BAN CHECK
-    # ======================
-    banned_users = []
+# ======================
+# BAN CHECK
+# ======================
 
-    banned_users = await db.get_ban_users()
-    banned_users.append(user["user_id"])
-    if user_id in banned_users:
-        return await message.reply_text(
-            "<b>⛔️ ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜsɪɴɢ ᴛʜɪs ʙᴏᴛ.</b>\n\n"
-            "<i>ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ ɪғ ʏᴏᴜ ᴛʜɪɴᴋ ᴛʜɪs ɪs ᴀ ᴍɪsᴛᴀᴋᴇ.</i>",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ", url=BAN_SUPPORT)]]
-            )
+banned_users = await db.get_ban_users()
+
+if user_id in banned_users:
+    return await message.reply_text(
+        "<b>⛔️ ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜsɪɴɢ ᴛʜɪs ʙᴏᴛ.</b>\n\n"
+        "<i>ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ ɪғ ʏᴏᴜ ᴛʜɪɴᴋ ᴛʜɪs ɪs ᴀ ᴍɪsᴛᴀᴋᴇ.</i>",
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ", url=BAN_SUPPORT)]]
         )
-
+    )
+    
     # ======================
     # FORCE SUB
     # ======================
