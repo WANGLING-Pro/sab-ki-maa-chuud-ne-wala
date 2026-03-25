@@ -29,55 +29,23 @@ TUT_VID = f"{TUT_VID}"
 # =================================================================== #
 # 🔥 Short URL Generator + Click Counter
 # =================================================================== #
+prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
 
-API_URL = os.getenv("API_URL", "").rstrip("/")
-if not API_URL:
-    raise ValueError("⚠️ Missing 'API_URL' in environment variables!")
+buttons = [
+    [
+        InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=prem_link),
+        InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID),
+    ],
+    [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")],
+]
 
-
-async def get_total_clicks(user_id, link):
-    encoded_link = quote(link, safe="")
-    api_url = f"{API_URL}/get_clicks?user_id={user_id}&link={encoded_link}"
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(api_url) as resp:
-            if resp.status == 200:
-                data = await resp.json()
-                return data.get("total_clicks", 0)
-            return 0
-
-
-async def short_url(client: Client, message: Message, base64_string):
-    try:
-        user_id = message.from_user.id
-
-        prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-        encoded_link = quote(prem_link, safe="")
-
-        counter_url = f"{API_URL}/redirect?user_id={user_id}&link={encoded_link}"
-
-        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, counter_url)
-
-        total_clicks = await get_total_clicks(user_id, prem_link)
-
-        buttons = [
-            [
-                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
-                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID),
-            ],
-            [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")],
-        ]
-
-        caption = f"Total Clicks :- {total_clicks}\n\n{SHORT_MSG.format()}"
-
-        await message.reply_photo(
-            photo=SHORTENER_PIC,
-            caption=caption,
-            reply_markup=InlineKeyboardMarkup(buttons),
-            message_effect_id=MSG_EFFECT
-        )
-
-    except Exception as e:
+await message.reply_photo(
+    photo=SHORTENER_PIC,
+    caption=SHORT_MSG.format(),
+    reply_markup=InlineKeyboardMarkup(buttons),
+    message_effect_id=MSG_EFFECT
+)
+except Exception as e:
         import traceback
         traceback.print_exc()
         print(f"❌ Error in short_url: {e}")
