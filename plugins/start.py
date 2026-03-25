@@ -45,12 +45,7 @@ await message.reply_photo(
     reply_markup=InlineKeyboardMarkup(buttons),
     message_effect_id=MSG_EFFECT
 )
-except Exception as e:
-        import traceback
-        traceback.print_exc()
-        print(f"❌ Error in short_url: {e}")
-        await message.reply_text(f"⚠️ Error Details:\n`{e}`")
-        
+
 
 # =================================================================== #
 # 🔥 START COMMAND FIXED — AUTO SHORTENER DISABLED
