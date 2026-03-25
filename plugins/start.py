@@ -29,6 +29,7 @@ TUT_VID = f"{TUT_VID}"
 # =================================================================== #
 # 🔥 Short URL Generator + Click Counter
 # =================================================================== #
+
 prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
 
 buttons = [
@@ -44,8 +45,7 @@ await message.reply_photo(
     caption=SHORT_MSG.format(),
     reply_markup=InlineKeyboardMarkup(buttons),
     message_effect_id=MSG_EFFECT
-)
-
+     )
 
 # =================================================================== #
 # 🔥 START COMMAND FIXED — AUTO SHORTENER DISABLED
