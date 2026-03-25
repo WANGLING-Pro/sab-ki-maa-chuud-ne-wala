@@ -5,7 +5,6 @@ import pyromod.listen
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 import sys
-import pytz
 from datetime import datetime
 from config import *
 from database.db_premium import *
@@ -84,30 +83,17 @@ class Bot(Client):
         logger.info(f"Bot started as @{self.username}")
 
         # ================= WEB SERVER =================
-    
-    try:
-    app = web.AppRunner(await web_server())
-    await app.setup()
+        try:
+            app = web.AppRunner(await web_server())
+            await app.setup()
 
-    port = int(PORT)
+            site = web.TCPSite(app, "0.0.0.0", int(PORT))
+            await site.start()
 
-    try:
-        site = web.TCPSite(app, "0.0.0.0", port)
-        await site.start()
-        logger.info(f"Web server running on port {port}")
+            logger.info(f"Web server running on port {PORT}")
+        except Exception as e:
+            logger.error(f"Web server failed: {e}")
 
-    except OSError:
-        logger.warning(f"Port {port} busy, trying fallback...")
-
-        port += 1
-        site = web.TCPSite(app, "0.0.0.0", port)
-        await site.start()
-
-        logger.info(f"Web server running on fallback port {port}")
-
-except Exception as e:
-    logger.error(f"Web server failed: {e}")
-        
         # ================= OWNER NOTIFY =================
         try:
             await self.send_message(
