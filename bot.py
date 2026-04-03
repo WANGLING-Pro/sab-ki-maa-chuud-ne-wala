@@ -2,32 +2,38 @@ from aiohttp import web
 from plugins import web_server
 import asyncio
 import pyromod.listen
+import time
+import sys
+import logging
+
 from pyrogram import Client
 from pyrogram.errors import FloodWait
 from pyrogram.enums import ParseMode
-import sys
 from datetime import datetime
+
 from config import *
 from database.db_premium import *
 from database.database import db
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-import logging
+
 
 # ================= LOGGING =================
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 # ================= SCHEDULER =================
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
 
-# ⚠️ FIXED: DB spam avoid
 scheduler.add_job(remove_expired_users, "interval", minutes=5)
+
 
 async def daily_reset_task():
     try:
         await db.reset_all_verify_counts()
     except Exception as e:
         logger.error(f"Reset error: {e}")
+
 
 scheduler.add_job(daily_reset_task, "cron", hour=0, minute=0)
 
@@ -46,7 +52,9 @@ class Bot(Client):
 
     async def start(self):
         await super().start()
-        scheduler.start()
+
+        if not scheduler.running:
+            scheduler.start()
 
         self.uptime = datetime.now()
         me = await self.get_me()
@@ -105,18 +113,33 @@ class Bot(Client):
             pass
 
     async def stop(self, *args):
-        await super().stop()
+        try:
+            await super().stop()
+        except:
+            pass
         logger.info("Bot stopped.")
 
     def run(self):
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.start())
 
-        logger.info("Bot is now running. Thanks to @I_am_nerev_die")
+        while True:
+            try:
+                loop.run_until_complete(self.start())
+                logger.info("Bot is now running. Thanks to @I_am_nerev_die")
+                loop.run_forever()
+                break
 
-        try:
-            loop.run_forever()
-        except KeyboardInterrupt:
-            logger.info("Shutting down...")
-        finally:
-            loop.run_until_complete(self.stop())
+            except FloodWait as e:
+                wait_time = int(e.value)
+                logger.warning(f"FloodWait detected. Sleeping for {wait_time} seconds...")
+                time.sleep(wait_time)
+
+            except KeyboardInterrupt:
+                logger.info("Shutting down...")
+                break
+
+            except Exception as e:
+                logger.error(f"Bot crashed: {e}")
+                break
+
+        loop.run_until_complete(self.stop())
