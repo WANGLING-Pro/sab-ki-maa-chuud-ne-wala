@@ -52,6 +52,9 @@ class Database:
         data = await self.admins.find({}, {"_id": 1}).to_list(None)
         return [x["_id"] for x in data]
 
+    async def admin_exist(self, user_id: int):
+        return bool(await self.admins.find_one({"_id": user_id}))
+
     # ================= BANNED =================
 
     async def ban_user_exist(self, user_id: int):
@@ -178,7 +181,5 @@ class Database:
         result = await self.verify_count.aggregate(pipeline).to_list(1)
         return result[0]["total"] if result else 0
 
-
-# ================= INIT =================
 
 db = Database(DB_URI, DB_NAME)
