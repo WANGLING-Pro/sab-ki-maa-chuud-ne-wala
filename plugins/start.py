@@ -30,15 +30,8 @@ TUT_VID = f"{TUT_VID}"
 # 🔥 Short URL Generator + Click Counter
 # =================================================================== #
 
-prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
 
-buttons = [
-    [
-        InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=prem_link),
-        InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID),
-    ],
-    [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")],
-]
+
 
 
 # =================================================================== #
@@ -65,6 +58,20 @@ async def start_command(client: Client, message: Message):
             )
         )
 
+    buttons = [
+    [
+        InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=prem_link),
+        InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID),
+    ],
+    [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")],
+    ]
+
+    await message.reply_photo(
+        photo=SHORTENER_PIC,
+        caption=SHORT_MSG.format(),
+        reply_markup=InlineKeyboardMarkup(buttons),
+        message_effect_id=MSG_EFFECT
+        )
     
     # ======================
     # FORCE SUB
