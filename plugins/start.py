@@ -46,7 +46,6 @@ async def start_command(client: Client, message: Message):
     # ======================
     # BAN CHECK
     # ======================
-
     banned_users = await db.get_ban_users()
 
     if user_id in banned_users:
@@ -58,21 +57,6 @@ async def start_command(client: Client, message: Message):
             )
         )
 
-    buttons = [
-    [
-        InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=prem_link),
-        InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID),
-    ],
-    [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")],
-    ]
-
-    await message.reply_photo(
-        photo=SHORTENER_PIC,
-        caption=SHORT_MSG.format(),
-        reply_markup=InlineKeyboardMarkup(buttons),
-        message_effect_id=MSG_EFFECT
-        )
-    
     # ======================
     # FORCE SUB
     # ======================
@@ -89,9 +73,10 @@ async def start_command(client: Client, message: Message):
             pass
 
     # ======================
-    # NORMAL /start (NO PAYLOAD)
+    # NORMAL START
     # ======================
     if len(message.command) == 1:
+
         start_markup = InlineKeyboardMarkup(
             [
                 [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/P_World_81")],
@@ -116,23 +101,11 @@ async def start_command(client: Client, message: Message):
         )
 
     # ======================
-    # PAYLOAD MODE
+    # PAYLOAD MODE (DIRECT)
     # ======================
-
-    is_premium = await is_premium_user(user_id)
-
     try:
         payload = message.command[1]
-
-        # Non premium -> shortener
-        if (not is_premium) and (user_id != OWNER_ID) and (not payload.startswith("yu3elk")):
-            await short_url(client, message, payload)
-            return
-
-        # unwrap premium wrapper
-        base64_string = payload[6:-1] if payload.startswith("yu3elk") else payload
-
-        decoded = await decode(base64_string)
+        decoded = await decode(payload)
         args = decoded.split("-")
 
         ids = []
@@ -147,36 +120,33 @@ async def start_command(client: Client, message: Message):
             ids = [int(int(args[1]) / abs(client.db_channel.id))]
 
         else:
-            return await message.reply("❌ Invalid or expired link.")
+            return await message.reply("❌ Invalid link.")
 
-    except Exception as e:
-        print("Payload error:", e)
-        return await message.reply("❌ Invalid or expired link.")
+    except:
+        return await message.reply("❌ Invalid link.")
 
     # ======================
     # FETCH FILES
     # ======================
-
-    temp = await message.reply("<b>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ... ғᴇᴛᴄʜɪɴɢ ғɪʟᴇs...</b>")
+    temp = await message.reply("Please wait...")
 
     try:
         msgs = await get_messages(client, ids)
-    except Exception as e:
-        print("Get messages error:", e)
+    except:
         await temp.delete()
-        return await message.reply("❌ ғɪʟᴇ ɴᴏᴛ ғᴏᴜɴᴅ!")
+        return await message.reply("❌ File not found!")
     finally:
         try:
             await temp.delete()
         except:
             pass
 
-    sent_msgs = []
-
     for msg in msgs:
-        if not msg or msg.empty:
+        try:
+            await msg.copy(chat_id=user_id)
+        except:
             continue
-
+            
         original_caption = msg.caption.html if msg.caption else ""
         final_caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
         reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
