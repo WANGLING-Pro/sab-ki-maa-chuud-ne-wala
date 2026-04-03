@@ -3,6 +3,7 @@ from plugins import web_server
 import asyncio
 import pyromod.listen
 from pyrogram import Client
+from pyrogram.errors import FloodWait
 from pyrogram.enums import ParseMode
 import sys
 from datetime import datetime
