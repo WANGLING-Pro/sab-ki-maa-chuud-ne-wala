@@ -40,12 +40,6 @@ buttons = [
     [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")],
 ]
 
-await message.reply_photo(
-    photo=SHORTENER_PIC,
-    caption=SHORT_MSG.format(),
-    reply_markup=InlineKeyboardMarkup(buttons),
-    message_effect_id=MSG_EFFECT
-     )
 
 # =================================================================== #
 # 🔥 START COMMAND FIXED — AUTO SHORTENER DISABLED
