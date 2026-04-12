@@ -27,11 +27,30 @@ BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 
 # =================================================================== #
-# 🔥 Short URL Generator + Click Counter
+# 🔥 SHORT URL FUNCTION (CLICK COUNTER REMOVED)
 # =================================================================== #
+async def short_url(client: Client, message: Message, base64_string):
+    try:
+        prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
 
+        buttons = [
+            [
+                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=prem_link),
+                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID),
+            ],
+            [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")],
+        ]
 
+        await message.reply_photo(
+            photo=SHORTENER_PIC,
+            caption=SHORT_MSG.format(),
+            reply_markup=InlineKeyboardMarkup(buttons),
+            message_effect_id=MSG_EFFECT
+        )
 
+    except Exception as e:
+        print(f"❌ Error in short_url: {e}")
+        await message.reply_text(f"⚠️ Error:\n`{e}`")
 
 
 # =================================================================== #
