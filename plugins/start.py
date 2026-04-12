@@ -86,12 +86,14 @@ async def start_command(client: Client, message: Message):
     # ======================
     # ADD USER
     # ======================
-    if not await db.present_user(user_id):
-        try:
-            await db.add_user(user_id)
-        except:
-            pass
+    user = await db.users.find_one({"_id": user_id})
 
+if not user:
+    try:
+        await db.users.insert_one({"_id": user_id})
+    except:
+        pass
+        
     # ======================
     # NORMAL START
     # ======================
