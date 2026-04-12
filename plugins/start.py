@@ -65,7 +65,8 @@ async def start_command(client: Client, message: Message):
     # ======================
     # BAN CHECK
     # ======================
-    banned_users = await db.get_ban_users()
+    banned_users = await db.banned.find({}, {"_id": 1}).to_list(None)
+    banned_users = [x["_id"] for x in banned_users]
 
     if user_id in banned_users:
         return await message.reply_text(
