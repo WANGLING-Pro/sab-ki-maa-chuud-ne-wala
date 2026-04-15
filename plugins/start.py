@@ -1,130 +1,70 @@
-# Don't Remove Credit @P_World_18, @I_am_Never_die
-# Ask Doubt on telegram @Upcoming
+# ================= IMPORTS ================= #
 
 import asyncio
-import os
-import random
-import sys
-import re
-import time
-import aiohttp
-from datetime import datetime, timedelta
-from urllib.parse import quote
 from pyrogram import Client, filters
-from pyrogram.enums import ParseMode, ChatAction
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges
-from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
-from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
+from pyrogram.enums import ParseMode
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.errors import FloodWait
+
 from bot import Bot
 from config import *
-from config import MSG_EFFECT
 from helper_func import *
 from database.database import db
 from database.db_premium import *
 
-
-BAN_SUPPORT = f"{BAN_SUPPORT}"
-TUT_VID = f"{TUT_VID}"
-
-# =================================================================== #
-# 🔥 SHORT URL FUNCTION (CLICK COUNTER REMOVED)
-# =================================================================== #
-async def short_url(client: Client, message: Message, base64_string):
-    try:
-        prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-
-        buttons = [
-            [
-                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=prem_link),
-                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID),
-            ],
-            [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")],
-        ]
-
-        await message.reply_photo(
-            photo=SHORTENER_PIC,
-            caption=SHORT_MSG.format(),
-            reply_markup=InlineKeyboardMarkup(buttons),
-            message_effect_id=MSG_EFFECT
-        )
-
-    except Exception as e:
-        print(f"❌ Error in short_url: {e}")
-        await message.reply_text(f"⚠️ Error:\n`{e}`")
-
-
-# =================================================================== #
-# 🔥 START COMMAND FIXED — AUTO SHORTENER DISABLED
-# =================================================================== #
-
+# ================= START COMMAND =================
 @Bot.on_message(filters.command("start") & filters.private)
 async def start_command(client: Client, message: Message):
 
     user_id = message.from_user.id
 
-    # ======================
-    # BAN CHECK
-    # ======================
-    banned_users = await db.banned.find({}, {"_id": 1}).to_list(None)
-    banned_users = [x["_id"] for x in banned_users]
-
-    if user_id in banned_users:
+    # ================= BAN CHECK =================
+    banned = await db.banned.find_one({"_id": user_id})
+    if banned:
         return await message.reply_text(
-            "<b>⛔️ ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜsɪɴɢ ᴛʜɪs ʙᴏᴛ.</b>\n\n"
-            "<i>ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ ɪғ ʏᴏᴜ ᴛʜɪɴᴋ ᴛʜɪs ɪs ᴀ ᴍɪsᴛᴀᴋᴇ.</i>",
+            "⛔ ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜsɪɴɢ ᴛʜɪs ʙᴏᴛ.",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ", url=BAN_SUPPORT)]]
+                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
             )
         )
 
-    # ======================
-    # FORCE SUB
-    # ======================
+    # ================= FORCE SUB =================
     if not await is_subscribed(client, user_id):
         return await not_joined(client, message)
 
-    # ======================
-    # ADD USER
-    # ======================
+    # ================= ADD USER =================
     user = await db.users.find_one({"_id": user_id})
+    if not user:
+        try:
+            await db.users.insert_one({"_id": user_id})
+        except:
+            pass
 
-if not user:
-    try:
-        await db.users.insert_one({"_id": user_id})
-    except:
-        pass
-        
-    # ======================
-    # NORMAL START
-    # ======================
+    # ================= NORMAL START =================
     if len(message.command) == 1:
-
-        start_markup = InlineKeyboardMarkup(
-            [
-                [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/P_World_81")],
-                [
-                    InlineKeyboardButton("•ᴀʙᴏᴜᴛ", callback_data="about"),
-                    InlineKeyboardButton("•ʜᴇʟᴘ", callback_data="help"),
-                ],
-            ]
-        )
-
         return await message.reply_photo(
             photo=START_PIC,
             caption=START_MSG.format(
                 first=message.from_user.first_name,
                 last=message.from_user.last_name,
-                username=None if not message.from_user.username else '@' + message.from_user.username,
+                username=(
+                    None if not message.from_user.username
+                    else '@' + message.from_user.username
+                ),
                 mention=message.from_user.mention,
                 id=user_id
             ),
-            reply_markup=start_markup,
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/P_World_81")],
+                [
+                    InlineKeyboardButton("ᴀʙᴏᴜᴛ", callback_data="about"),
+                    InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help")
+                ]
+            ]),
             message_effect_id=MSG_EFFECT
         )
 
-    # ======================
-    # PAYLOAD MODE (DIRECT)
-    # ======================
+    # ================= PAYLOAD =================
     try:
         payload = message.command[1]
         decoded = await decode(payload)
@@ -142,43 +82,37 @@ if not user:
             ids = [int(int(args[1]) / abs(client.db_channel.id))]
 
         else:
-            return await message.reply("❌ Invalid link.")
+            return await message.reply("❌ Invalid link")
 
     except:
-        return await message.reply("❌ Invalid link.")
+        return await message.reply("❌ Invalid link")
 
-    # ======================
-    # FETCH FILES
-    # ======================
+    # ================= FETCH =================
     temp = await message.reply("Please wait...")
 
     try:
         msgs = await get_messages(client, ids)
     except:
         await temp.delete()
-        return await message.reply("❌ File not found!")
+        return await message.reply("❌ File not found")
     finally:
         try:
             await temp.delete()
         except:
             pass
 
+    sent_msgs = []
+
+    # ================= SEND FILES =================
     for msg in msgs:
-        try:
-            await msg.copy(chat_id=user_id)
-        except:
+        if not msg or msg.empty:
             continue
-            
-        original_caption = msg.caption.html if msg.caption else ""
-        final_caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
-        reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
 
         try:
             s = await msg.copy(
                 chat_id=user_id,
-                caption=final_caption,
+                caption=msg.caption.html if msg.caption else None,
                 parse_mode=ParseMode.HTML,
-                reply_markup=reply_markup,
                 protect_content=PROTECT_CONTENT
             )
             sent_msgs.append(s)
@@ -186,36 +120,17 @@ if not user:
 
         except FloodWait as e:
             await asyncio.sleep(e.x)
-            try:
-                s = await msg.copy(
-                    chat_id=user_id,
-                    caption=final_caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
-                )
-                sent_msgs.append(s)
-            except:
-                pass
 
-        except Exception as e:
-            print("Copy error:", e)
+        except:
             continue
 
-    # ======================
-    # AUTO DELETE SYSTEM
-    # ======================
-
+    # ================= AUTO DELETE =================
     FILE_DEL = await db.get_del_timer()
 
     if FILE_DEL and FILE_DEL > 0 and sent_msgs:
 
         note = await message.reply(
-            text=(
-                f"Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_DEL)}. "
-                "Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ."
-            ),
-            message_effect_id=MSG_EFFECT
+            f"File will be deleted in {get_exp_time(FILE_DEL)}"
         )
 
         await asyncio.sleep(FILE_DEL)
@@ -226,24 +141,48 @@ if not user:
             except:
                 pass
 
-        reload_url = f"https://t.me/{client.username}?start={message.command[1]}"
-
-        kb = InlineKeyboardMarkup(
-            [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ", url=reload_url)]]
-        )
-
         try:
-            await note.edit(
-                text=(
-                    "ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n"
-                    "ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇"
-                ),
-                reply_markup=kb
-            )
+            await note.edit("File deleted.")
         except:
             pass
 
-    return    
+
+# ================= FORCE SUB =================
+async def not_joined(client: Client, message: Message):
+
+    user_id = message.from_user.id
+    channels = await db.show_channels()
+
+    buttons = []
+
+    for ch in channels:
+        try:
+            member = await client.get_chat_member(ch, user_id)
+            if member:
+                continue
+        except:
+            pass
+
+        chat = await client.get_chat(ch)
+
+        link = (
+            f"https://t.me/{chat.username}"
+            if chat.username else await client.export_chat_invite_link(ch)
+        )
+
+        buttons.append([
+            InlineKeyboardButton(f"ᴊᴏɪɴ {chat.title}", url=link)
+        ])
+
+    buttons.append([
+        InlineKeyboardButton("ᴛʀʏ ᴀɢᴀɪɴ", url=f"https://t.me/{client.username}")
+    ])
+
+    return await message.reply_photo(
+        photo=FORCE_PIC,
+        caption="Join all channels first.",
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
                 
     
 
