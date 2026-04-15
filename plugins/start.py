@@ -55,10 +55,10 @@ async def start_command(client: Client, message: Message):
                 id=user_id
             ),
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/P_World_81")],
+                [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟ", url="https://t.me/P_World_81")],
                 [
-                    InlineKeyboardButton("ᴀʙᴏᴜᴛ", callback_data="about"),
-                    InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help")
+                    InlineKeyboardButton("•ᴀʙᴏᴜᴛ", callback_data="about"),
+                    InlineKeyboardButton("•ʜᴇʟᴘ", callback_data="help")
                 ]
             ]),
             message_effect_id=MSG_EFFECT
