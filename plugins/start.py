@@ -93,9 +93,8 @@ async def start_command(client: Client, message: Message):
 
    # ================= PAYLOAD =================
         try:
-                payload = message.command[1]
-
-        print(f"PAYLOAD = {payload}")
+                payload = message.command[1print
+            print(f"PAYLOAD = {payload}")
 
         is_premium = await is_premium_user(user_id)
 
