@@ -93,47 +93,37 @@ async def start_command(client: Client, message: Message):
 
    # ================= PAYLOAD =================
     try:
-        payload = message.command[1]
+    payload = message.command[1]
 
-        # ================= SHORTENER CHECK =================
-        is_premium = await is_premium_user(user_id)
+    print(f"PAYLOAD = {payload}")
 
-        if (
-            not is_premium
-            and user_id != OWNER_ID
-            and not payload.startswith("yu3elk")
-        ):
-            await short_url(client, message, payload)
-            return
+    is_premium = await is_premium_user(user_id)
 
-        # ================= UNWRAP VERIFIED LINK =================
-        base64_string = (
-            payload[6:-1]
-            if payload.startswith("yu3elk")
-            else payload
-        )
+    if (
+        not is_premium
+        and user_id != OWNER_ID
+        and not payload.startswith("yu3elk")
+    ):
+        print("SHORTENER MODE")
+        await short_url(client, message, payload)
+        return
 
-        decoded = await decode(base64_string)
-        args = decoded.split("-")
+    base64_string = (
+        payload[6:-1]
+        if payload.startswith("yu3elk")
+        else payload
+    )
 
-        ids = []
+    print(f"BASE64 = {base64_string}")
 
-        if len(args) == 3:
-            start = int(int(args[1]) / abs(client.db_channel.id))
-            end = int(int(args[2]) / abs(client.db_channel.id))
-            step = 1 if start <= end else -1
-            ids = list(range(start, end + step, step))
+    decoded = await decode(base64_string)
 
-        elif len(args) == 2:
-            ids = [int(int(args[1]) / abs(client.db_channel.id))]
+    print(f"DECODED = {decoded}")
 
-        else:
-            return await message.reply("❌ Invalid link")
+except Exception as e:
+    print(f"PAYLOAD ERROR = {e}")
+    return await message.reply(f"❌ {e}")
 
-    except Exception as e:
-        print(f"Payload Error: {e}")
-        return await message.reply("❌ Invalid link")
-        
     # ================= FETCH =================
     temp = await message.reply("Please wait...")
 
