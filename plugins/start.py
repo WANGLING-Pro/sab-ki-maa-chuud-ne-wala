@@ -13,6 +13,32 @@ from database.database import db
 from database.db_premium import *
 
 # ================= START COMMAND =================
+
+async def short_url(client: Client, message: Message, base64_string):
+    try:
+        prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
+        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
+
+        buttons = [
+            [
+                InlineKeyboardButton(text="á´…á´á´¡É´ÊŸá´á´€á´…", url=short_link),
+                InlineKeyboardButton(text="á´›á´œá´›á´Ê€Éªá´€ÊŸ", url=TUT_VID)
+            ],
+            [
+                InlineKeyboardButton(text="á´˜Ê€á´‡á´Éªá´œá´", callback_data="premium")
+            ]
+        ]
+
+        await message.reply_photo(
+            photo=SHORTENER_PIC,
+            caption=SHORT_MSG.format(
+            ),
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
+
+    except IndexError:
+        pass
+        
 @Bot.on_message(filters.command("start") & filters.private)
 async def start_command(client: Client, message: Message):
 
