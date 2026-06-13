@@ -92,38 +92,38 @@ async def start_command(client: Client, message: Message):
         )
 
    # ================= PAYLOAD =================
-    try:
-    payload = message.command[1]
+        try:
+                payload = message.command[1]
 
-    print(f"PAYLOAD = {payload}")
+        print(f"PAYLOAD = {payload}")
 
-    is_premium = await is_premium_user(user_id)
+        is_premium = await is_premium_user(user_id)
 
-    if (
-        not is_premium
-        and user_id != OWNER_ID
-        and not payload.startswith("yu3elk")
-    ):
-        print("SHORTENER MODE")
-        await short_url(client, message, payload)
-        return
+        if (
+            not is_premium
+            and user_id != OWNER_ID
+            and not payload.startswith("yu3elk")
+        ):
+            print("SHORTENER MODE")
+            await short_url(client, message, payload)
+            return
 
-    base64_string = (
-        payload[6:-1]
-        if payload.startswith("yu3elk")
-        else payload
-    )
+        base64_string = (
+            payload[6:-1]
+            if payload.startswith("yu3elk")
+            else payload
+        )
 
-    print(f"BASE64 = {base64_string}")
+        print(f"BASE64 = {base64_string}")
 
-    decoded = await decode(base64_string)
+        decoded = await decode(base64_string)
 
-    print(f"DECODED = {decoded}")
+        print(f"DECODED = {decoded}")
 
-except Exception as e:
-    print(f"PAYLOAD ERROR = {e}")
-    return await message.reply(f"❌ {e}")
-
+        except Exception as e:
+        print(f"PAYLOAD ERROR = {e}")
+        return await message.reply(f"❌ {e}")
+        
     # ================= FETCH =================
     temp = await message.reply("Please wait...")
 
