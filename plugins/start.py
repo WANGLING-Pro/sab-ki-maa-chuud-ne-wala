@@ -117,25 +117,23 @@ base64_string = (
 decoded = await decode(base64_string)
 args = decoded.split("-")
 
-        decoded = await decode(payload)
-        args = decoded.split("-")
+ids = []
 
-        ids = []
+if len(args) == 3:
+    start = int(int(args[1]) / abs(client.db_channel.id))
+    end = int(int(args[2]) / abs(client.db_channel.id))
+    step = 1 if start <= end else -1
+    ids = list(range(start, end + step, step))
 
-        if len(args) == 3:
-            start = int(int(args[1]) / abs(client.db_channel.id))
-            end = int(int(args[2]) / abs(client.db_channel.id))
-            step = 1 if start <= end else -1
-            ids = list(range(start, end + step, step))
+elif len(args) == 2:
+    ids = [int(int(args[1]) / abs(client.db_channel.id))]
 
-        elif len(args) == 2:
-            ids = [int(int(args[1]) / abs(client.db_channel.id))]
+else:
+    return await message.reply("❌ Invalid link")
 
-        else:
-            return await message.reply("❌ Invalid link")
-
-    except:
-        return await message.reply("❌ Invalid link")
+except Exception as e:
+    print(f"Payload Error: {e}")
+    return await message.reply("❌ Invalid link")
 
     # ================= FETCH =================
     temp = await message.reply("Please wait...")
