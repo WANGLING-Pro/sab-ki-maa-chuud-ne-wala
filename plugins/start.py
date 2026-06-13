@@ -67,7 +67,30 @@ async def start_command(client: Client, message: Message):
 
     # ================= PAYLOAD =================
     try:
+       # payload = message.command[1]
         payload = message.command[1]
+
+# ================= SHORTENER CHECK =================
+is_premium = await is_premium_user(user_id)
+
+if (
+    not is_premium
+    and user_id != OWNER_ID
+    and not payload.startswith("yu3elk")
+):
+    await short_url(client, message, payload)
+    return
+
+# ================= UNWRAP VERIFIED LINK =================
+base64_string = (
+    payload[6:-1]
+    if payload.startswith("yu3elk")
+    else payload
+)
+
+decoded = await decode(base64_string)
+args = decoded.split("-")
+
         decoded = await decode(payload)
         args = decoded.split("-")
 
