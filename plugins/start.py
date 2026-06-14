@@ -124,16 +124,30 @@ async def start_command(client: Client, message: Message):
         print(f"PAYLOAD ERROR = {e}")
         return await message.reply(f"❌ Invalid Link or Code Error: {e}")
 
-    # ================= FETCH =================
+# ===================== FETCH ====================== #
+
     temp = await message.reply("Processing your request, please wait...")
 
     try:
-        # Ab 'ids' variable successfully upar se mil jayega
-        msgs = await get_messages(client, ids)
+        # DB_CHANNEL_ID aapke config.py ya env se aayega jahan files store hoti hain
+        # Agar aapki config me variable ka naam sirf CHANNEL_ID hai, to niche 'DB_CHANNEL_ID' ko 'CHANNEL_ID' kar dein.
+        
+        # 1. Agar ids ek list hai (Multiple files ke liye)
+        if isinstance(ids, list):
+            msgs = await client.get_messages(chat_id=DB_CHANNEL_ID, message_ids=ids)
+        
+        # 2. Agar ids single integer hai (Single file ke liye)
+        elif isinstance(ids, int) or (isinstance(ids, str) and ids.isdigit()):
+            msgs = await client.get_messages(chat_id=DB_CHANNEL_ID, message_ids=int(ids))
+        
+        # 3. Agar aapka 'get_messages' custom helper function hi hai, to use sahi format dein:
+        else:
+            msgs = await get_messages(client, ids)
+
     except Exception as fetch_error:
         print(f"FETCH ERROR = {fetch_error}")
         await temp.delete()
-        return await message.reply("❌ File not found in Database")
+        return await message.reply(f"❌ File not found in Database\n\n`Error Details: {fetch_error}`")
     finally:
         try:
             await temp.delete()
