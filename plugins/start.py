@@ -90,76 +90,104 @@ async def start_command(client: Client, message: Message):
             message_effect_id=MSG_EFFECT
         )
 
-    # ================= PAYLOAD PROCESSING =================
-    ids = None  # Initialize pehle se
+   # ================= PAYLOAD =================
+ids = None  # Initialize karo
+base64_string = None
+
+try:
+    payload = message.command[1]
+    print(f"PAYLOAD RECEIVED = {payload}")
+
+    is_premium = await is_premium_user(user_id)
+
+    # Normal user check - shortener mode trigger
+    if not is_premium and user_id != OWNER_ID and not payload.startswith("yu3elk"):
+        print(f"SHORTENER MODE TRIGGERED FOR USER {user_id}")
+        await short_url(client, message, payload)
+        return
+
+    # Shortener bypass payload extraction
+    if payload.startswith("yu3elk"):
+        print("Shortener format detected")
+        base64_string = payload[6:-1]  # 'yu3elk' aur '7' remove
+    else:
+        print("Normal payload format")
+        base64_string = payload
+
+    print(f"BASE64 STRING TO DECODE = {base64_string}")
     
-    try:
-        payload = message.command[1]
-        print(f"PAYLOAD = {payload}")
+    # Decode to get IDs
+    ids = await decode(base64_string)
+    print(f"DECODE SUCCESS - IDS = {ids}, TYPE = {type(ids)}")
 
-        is_premium = await is_premium_user(user_id)
+except IndexError as ie:
+    print(f"INDEX ERROR = {ie}")
+    return await message.reply("❌ Invalid Command Format / No payload provided")
+    
+except Exception as e:
+    print(f"PAYLOAD ERROR = {e}")
+    import traceback
+    print(f"FULL TRACEBACK: {traceback.format_exc()}")
+    return await message.reply(f"❌ Invalid Link or Format Error: {str(e)[:100]}")
 
-        # Normal user check - shortener mode trigger
-        if not is_premium and user_id != OWNER_ID and not payload.startswith("yu3elk"):
-            print("SHORTENER MODE TRIGGERED")
-            await short_url(client, message, payload)
-            return
+# Safety check kaafi important hai
+if ids is None:
+    print("IDS IS NONE - RETURNING")
+    return await message.reply("❌ Failed to decode payload - IDs are empty")
 
-        # Shortener bypass payload extraction
-        if payload.startswith("yu3elk"):
-            base64_string = payload[6:-1]  # 'yu3elk' aur '7' remove
-        else:
-            base64_string = payload
+# ================= FETCH MESSAGES =================
 
-        print(f"BASE64 = {base64_string}")
+temp = await message.reply("⏳ Processing your request, please wait...")
+msgs = []
+
+try:
+    print(f"FETCH ATTEMPT - IDS: {ids}, TYPE: {type(ids)}, CHANNEL_ID: {CHANNEL_ID}")
+    
+    # Handle different ID types
+    if isinstance(ids, list):
+        print(f"IDS is list with {len(ids)} items")
+        msgs = await client.get_messages(chat_id=CHANNEL_ID, message_ids=ids)
         
-        # Decode to get IDs
-        ids = await decode(base64_string)
-        print(f"DECODED IDS = {ids}")
-
-    except IndexError:
-        return await message.reply("❌ Invalid Command Format")
-    except Exception as e:
-        print(f"PAYLOAD ERROR = {e}")
-        return await message.reply(f"❌ Invalid Link or Format Error: {e}")
-
-    # Safety check
-    if ids is None:
-        return await message.reply("❌ Failed to process payload")
-
-    # ================= FETCH MESSAGES =================
-    temp = await message.reply("⏳ Processing your request, please wait...")
-    msgs = []
-
-    try:
-        # Handle different ID types
-        if isinstance(ids, list):
-            msgs = await client.get_messages(chat_id=CHANNEL_ID, message_ids=ids)
-        elif isinstance(ids, int):
-            single_msg = await client.get_messages(chat_id=CHANNEL_ID, message_ids=ids)
-            msgs = [single_msg] if single_msg else []
-        elif isinstance(ids, str) and ids.isdigit():
+    elif isinstance(ids, int):
+        print(f"IDS is int: {ids}")
+        single_msg = await client.get_messages(chat_id=CHANNEL_ID, message_ids=ids)
+        msgs = [single_msg] if single_msg else []
+        
+    elif isinstance(ids, str):
+        print(f"IDS is string: {ids}")
+        if ids.isdigit():
             single_msg = await client.get_messages(chat_id=CHANNEL_ID, message_ids=int(ids))
             msgs = [single_msg] if single_msg else []
         else:
-            # Fallback for custom function
-            custom_fetch = await get_messages(client, ids)
-            msgs = custom_fetch if isinstance(custom_fetch, list) else [custom_fetch]
+            print(f"String IDS not digit format")
+            msgs = []
+    else:
+        print(f"UNKNOWN IDS TYPE: {type(ids)}")
+        msgs = []
 
-        # Validate messages
-        if not msgs or all(msg is None for msg in msgs):
-            await temp.delete()
-            return await message.reply("❌ File not found in Database")
-
-    except Exception as fetch_err:
-        print(f"FETCH ERROR = {fetch_err}")
+    print(f"MESSAGES FETCHED = {len(msgs) if isinstance(msgs, list) else 'not a list'}")
+    
+    # Validate messages
+    if not msgs or (isinstance(msgs, list) and all(msg is None for msg in msgs)):
+        print("NO VALID MESSAGES FOUND - msgs is empty or all None")
         try:
             await temp.delete()
         except:
             pass
-        return await message.reply(f"❌ File not found in Database\n\nError: {str(fetch_err)[:100]}")
+        return await message.reply("❌ File not found in Database (No messages fetched)")
 
-    # Delete temp message
+except Exception as fetch_err:
+    print(f"FETCH ERROR = {fetch_err}")
+    import traceback
+    print(f"FETCH ERROR TRACEBACK: {traceback.format_exc()}")
+    try:
+        await temp.delete()
+    except:
+        pass
+    return await message.reply(f"❌ File not found in Database\n\nError Details: {str(fetch_err)[:80]}")
+
+finally:
+    # Temp message delete
     try:
         await temp.delete()
     except:
