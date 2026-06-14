@@ -91,37 +91,40 @@ async def start_command(client: Client, message: Message):
             message_effect_id=MSG_EFFECT
         )
 
-   # ================= PAYLOAD =================
-        try
-            payload = message.command[1print
-            print(f"PAYLOAD = {payload}")
+       # ================= PAYLOAD =================
+    try:
+        payload = message.command[1]
+        print(f"PAYLOAD = {payload}")
 
         is_premium = await is_premium_user(user_id)
 
-        if (
-            not is_premium
-            and user_id != OWNER_ID
-            and not payload.startswith("yu3elk")
-        ):
-            print("SHORTENER MODE")
+        # Agar user premium nahi hai, owner nahi hai, aur link shortener se hokar nahi aaya hai
+        if not is_premium and user_id != OWNER_ID and not payload.startswith("yu3elk"):
+            print("SHORTENER MODE TRIGGERED")
             await short_url(client, message, payload)
             return
 
-        base64_string = (
-            payload[6:-1]
-            if payload.startswith("yu3elk")
-            else payload
-        )
+        # Agar link shortener bypass karke aaya hai (yu3elk se start ho raha hai)
+        if payload.startswith("yu3elk"):
+            # 'yu3elk' (6 chars) ko aage se hatao aur aakhiri ka '7' (1 char) hatao
+            base64_string = payload[6:-1]
+        else:
+            base64_string = payload
 
-        print(f"BASE64 = {base64_string}")
-
+        print(f"BASE64 TO DECODE = {base64_string}")
+        
+        # Base64 decode karke IDs nikalna
         decoded = await decode(base64_string)
-
         print(f"DECODED = {decoded}")
+        
+        # Yahan check kariye ki aapka decode function kis format me data de raha hai (list ya string)
+        # Agar ids undefined thin, toh hum 'decoded' ko ids variable me daal rahe hain
+        ids = decoded 
 
-        except Exception as e:
+    except Exception as e:
         print(f"PAYLOAD ERROR = {e}")
-        return await message.reply(f"❌ {e}")
+        return await message.reply(f"❌ Invalid Link or Error: {e}")
+
         
     # ================= FETCH =================
     temp = await message.reply("Please wait...")
