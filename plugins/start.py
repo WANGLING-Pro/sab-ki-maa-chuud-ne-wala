@@ -124,25 +124,30 @@ async def start_command(client: Client, message: Message):
         print(f"PAYLOAD ERROR = {e}")
         return await message.reply(f"❌ Invalid Link or Code Error: {e}")
 
-# ===================== FETCH ====================== #
+
+# ==================== FETCH ====================== #
 
     temp = await message.reply("Processing your request, please wait...")
 
     try:
-        # DB_CHANNEL_ID aapke config.py ya env se aayega jahan files store hoti hain
-        # Agar aapki config me variable ka naam sirf CHANNEL_ID hai, to niche 'DB_CHANNEL_ID' ko 'CHANNEL_ID' kar dein.
-        
+        # Base variable define kiya taaki 'referenced before assignment' error na aaye
+        msgs = None 
+
         # 1. Agar ids ek list hai (Multiple files ke liye)
         if isinstance(ids, list):
-            msgs = await client.get_messages(chat_id=DB_CHANNEL_ID, message_ids=ids)
+            msgs = await client.get_messages(chat_id=CHANNEL_ID, message_ids=ids)
         
-        # 2. Agar ids single integer hai (Single file ke liye)
+        # 2. Agar ids single integer hai ya string digit hai (Single file ke liye)
         elif isinstance(ids, int) or (isinstance(ids, str) and ids.isdigit()):
-            msgs = await client.get_messages(chat_id=DB_CHANNEL_ID, message_ids=int(ids))
+            msgs = await client.get_messages(chat_id=CHANNEL_ID, message_ids=int(ids))
         
-        # 3. Agar aapka 'get_messages' custom helper function hi hai, to use sahi format dein:
+        # 3. Agar upar ke dono format match nahi hote, toh custom helper use karein
         else:
             msgs = await get_messages(client, ids)
+
+        # Agar kisi wajah se msgs ab bhi khali hai, toh error throw karein
+        if not msgs:
+            raise Exception("Telegram se messages nahi mil paye. 'msgs' empty hai.")
 
     except Exception as fetch_error:
         print(f"FETCH ERROR = {fetch_error}")
@@ -154,6 +159,7 @@ async def start_command(client: Client, message: Message):
         except:
             pass
 
+    # Yahan se aapka aage ka code start hoga...
     sent_msgs = []
 
     # ================= SEND FILES =================
