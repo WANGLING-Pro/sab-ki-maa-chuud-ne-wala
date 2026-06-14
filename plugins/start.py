@@ -91,49 +91,49 @@ async def start_command(client: Client, message: Message):
             message_effect_id=MSG_EFFECT
         )
 
-       # ================= PAYLOAD =================
+          # ================= PAYLOAD=================
+
     try:
         payload = message.command[1]
-        print(f"PAYLOAD = {payload}")
+        print(f"PAYLOAD RECEIVED = {payload}")
 
         is_premium = await is_premium_user(user_id)
 
-        # Agar user premium nahi hai, owner nahi hai, aur link shortener se hokar nahi aaya hai
+        # Agar normal user hai aur link shortener se hokar nahi aaya hai
         if not is_premium and user_id != OWNER_ID and not payload.startswith("yu3elk"):
-            print("SHORTENER MODE TRIGGERED")
+            print("SHORTENER MODE TRIGGERED FOR USER")
             await short_url(client, message, payload)
             return
 
-        # Agar link shortener bypass karke aaya hai (yu3elk se start ho raha hai)
+        # Agar link shortener bypass karke aaya hai (yu3elk...7 format)
         if payload.startswith("yu3elk"):
-            # 'yu3elk' (6 chars) ko aage se hatao aur aakhiri ka '7' (1 char) hatao
-            base64_string = payload[6:-1]
+            base64_string = payload[6:-1] # 'yu3elk' aur '7' ko remove karega
         else:
             base64_string = payload
 
         print(f"BASE64 TO DECODE = {base64_string}")
         
         # Base64 decode karke IDs nikalna
-        decoded = await decode(base64_string)
-        print(f"DECODED = {decoded}")
+        decoded_ids = await decode(base64_string)
+        print(f"DECODED IDS = {decoded_ids}")
         
-        # Yahan check kariye ki aapka decode function kis format me data de raha hai (list ya string)
-        # Agar ids undefined thin, toh hum 'decoded' ko ids variable me daal rahe hain
-        ids = decoded 
+        # Sabse Important: ids variable ko value assign karna taaki FETCH block ise padh sake
+        ids = decoded_ids
 
     except Exception as e:
         print(f"PAYLOAD ERROR = {e}")
-        return await message.reply(f"❌ Invalid Link or Error: {e}")
+        return await message.reply(f"❌ Invalid Link or Code Error: {e}")
 
-        
     # ================= FETCH =================
-    temp = await message.reply("Please wait...")
+    temp = await message.reply("Processing your request, please wait...")
 
     try:
+        # Ab 'ids' variable successfully upar se mil jayega
         msgs = await get_messages(client, ids)
-    except:
+    except Exception as fetch_error:
+        print(f"FETCH ERROR = {fetch_error}")
         await temp.delete()
-        return await message.reply("❌ File not found")
+        return await message.reply("❌ File not found in Database")
     finally:
         try:
             await temp.delete()
