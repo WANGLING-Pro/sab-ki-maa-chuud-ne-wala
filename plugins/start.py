@@ -21,27 +21,24 @@ async def short_url(client: Client, message: Message, base64_string):
 
         buttons = [
             [
-                InlineKeyboardButton(text="á´…á´á´¡É´ÊŸá´á´€á´…", url=short_link),
-                InlineKeyboardButton(text="á´›á´œá´›á´Ê€Éªá´€ÊŸ", url=TUT_VID)
+                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
+                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)
             ],
             [
-                InlineKeyboardButton(text="á´˜Ê€á´‡á´Éªá´œá´", callback_data="premium")
+                InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")
             ]
         ]
 
         await message.reply_photo(
             photo=SHORTENER_PIC,
-            caption=SHORT_MSG.format(
-            ),
+            caption=SHORT_MSG.format(),
             reply_markup=InlineKeyboardMarkup(buttons),
         )
-
     except IndexError:
         pass
-        
+
 @Bot.on_message(filters.command("start") & filters.private)
 async def start_command(client: Client, message: Message):
-
     user_id = message.from_user.id
 
     # ================= BAN CHECK =================
@@ -74,10 +71,7 @@ async def start_command(client: Client, message: Message):
             caption=START_MSG.format(
                 first=message.from_user.first_name,
                 last=message.from_user.last_name,
-                username=(
-                    None if not message.from_user.username
-                    else '@' + message.from_user.username
-                ),
+                username=(None if not message.from_user.username else '@' + message.from_user.username),
                 mention=message.from_user.mention,
                 id=user_id
             ),
@@ -91,77 +85,66 @@ async def start_command(client: Client, message: Message):
             message_effect_id=MSG_EFFECT
         )
 
-          # ================= PAYLOAD=================
-
+    # ================= PAYLOAD PROCESSING =================
     try:
         payload = message.command[1]
-        print(f"PAYLOAD RECEIVED = {payload}")
+        print(f"PAYLOAD = {payload}")
 
         is_premium = await is_premium_user(user_id)
 
-        # Agar normal user hai aur link shortener se hokar nahi aaya hai
+        # Normal user check
         if not is_premium and user_id != OWNER_ID and not payload.startswith("yu3elk"):
-            print("SHORTENER MODE TRIGGERED FOR USER")
+            print("SHORTENER MODE")
             await short_url(client, message, payload)
             return
 
-        # Agar link shortener bypass karke aaya hai (yu3elk...7 format)
+        # Shortener bypass payload extraction
         if payload.startswith("yu3elk"):
-            base64_string = payload[6:-1] # 'yu3elk' aur '7' ko remove karega
+            base64_string = payload[6:-1]
         else:
             base64_string = payload
 
-        print(f"BASE64 TO DECODE = {base64_string}")
+        print(f"BASE64 = {base64_string}")
         
-        # Base64 decode karke IDs nikalna
-        decoded_ids = await decode(base64_string)
-        print(f"DECODED IDS = {decoded_ids}")
-        
-        # Sabse Important: ids variable ko value assign karna taaki FETCH block ise padh sake
-        ids = decoded_ids
+        # Safe decode execution
+        ids = await decode(base64_string)
+        print(f"DECODED IDS = {ids}")
 
     except Exception as e:
         print(f"PAYLOAD ERROR = {e}")
-        return await message.reply(f"❌ Invalid Link or Code Error: {e}")
+        return await message.reply(f"❌ Invalid Link or Format Error: {e}")
 
-
-# ==================== FETCH ====================== #
-
-    temp = await message.reply("Processing your request, please wait...")
+    # ================= FETCH MESSAGES =================
+    temp = await message.reply("Please wait...")
+    msgs = [] # Initialize list to avoid any reference errors
 
     try:
-        # Base variable define kiya taaki 'referenced before assignment' error na aaye
-        msgs = None 
-
-        # 1. Agar ids ek list hai (Multiple files ke liye)
+        # Apne confirm kiya ki CHANNEL_ID hi variable name hai:
         if isinstance(ids, list):
             msgs = await client.get_messages(chat_id=CHANNEL_ID, message_ids=ids)
-        
-        # 2. Agar ids single integer hai ya string digit hai (Single file ke liye)
         elif isinstance(ids, int) or (isinstance(ids, str) and ids.isdigit()):
-            msgs = await client.get_messages(chat_id=CHANNEL_ID, message_ids=int(ids))
-        
-        # 3. Agar upar ke dono format match nahi hote, toh custom helper use karein
+            single_msg = await client.get_messages(chat_id=CHANNEL_ID, message_ids=int(ids))
+            msgs = [single_msg] if single_msg else []
         else:
-            msgs = await get_messages(client, ids)
+            # Fallback if custom helper function needed
+            custom_fetch = await get_messages(client, ids)
+            msgs = custom_fetch if isinstance(custom_fetch, list) else [custom_fetch]
 
-        # Agar kisi wajah se msgs ab bhi khali hai, toh error throw karein
-        if not msgs:
-            raise Exception("Telegram se messages nahi mil paye. 'msgs' empty hai.")
-
-    except Exception as fetch_error:
-        print(f"FETCH ERROR = {fetch_error}")
-        await temp.delete()
-        return await message.reply(f"❌ File not found in Database\n\n`Error Details: {fetch_error}`")
-    finally:
-        try:
+        if not msgs or msgs[0] is None:
             await temp.delete()
-        except:
-            pass
+            return await message.reply("❌ File not found in Database (Messages Empty)")
 
-    # Yahan se aapka aage ka code start hoga...
-    sent_msgs = []
+    except Exception as fetch_err:
+        print(f"FETCH ERROR = {fetch_err}")
+        await temp.delete()
+        return await message.reply(f"❌ File not found in Database\n\n`Error Details: {fetch_err}`")
 
+    try:
+        await temp.delete()
+    except:
+        pass
+
+   
     # ================= SEND FILES =================
     for msg in msgs:
         if not msg or msg.empty:
