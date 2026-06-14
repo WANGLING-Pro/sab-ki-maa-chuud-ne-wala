@@ -16,7 +16,9 @@ from database.db_premium import *
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
-        prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
+        # Fix: client.username safe handle
+        username = client.me.username if client.me.username else "botusername"
+        prem_link = f"https://t.me/{username}?start=yu3elk{base64_string}7"
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
 
         buttons = [
@@ -36,6 +38,9 @@ async def short_url(client: Client, message: Message, base64_string):
         )
     except IndexError:
         pass
+    except Exception as e:
+        print(f"SHORT_URL ERROR = {e}")
+
 
 @Bot.on_message(filters.command("start") & filters.private)
 async def start_command(client: Client, message: Message):
@@ -61,8 +66,8 @@ async def start_command(client: Client, message: Message):
     if not user:
         try:
             await db.users.insert_one({"_id": user_id})
-        except:
-            pass
+        except Exception as db_err:
+            print(f"DB INSERT ERROR = {db_err}")
 
     # ================= NORMAL START =================
     if len(message.command) == 1:
@@ -70,7 +75,7 @@ async def start_command(client: Client, message: Message):
             photo=START_PIC,
             caption=START_MSG.format(
                 first=message.from_user.first_name,
-                last=message.from_user.last_name,
+                last=message.from_user.last_name or "",
                 username=(None if not message.from_user.username else '@' + message.from_user.username),
                 mention=message.from_user.mention,
                 id=user_id
@@ -86,65 +91,80 @@ async def start_command(client: Client, message: Message):
         )
 
     # ================= PAYLOAD PROCESSING =================
+    ids = None  # Initialize pehle se
+    
     try:
         payload = message.command[1]
         print(f"PAYLOAD = {payload}")
 
         is_premium = await is_premium_user(user_id)
 
-        # Normal user check
+        # Normal user check - shortener mode trigger
         if not is_premium and user_id != OWNER_ID and not payload.startswith("yu3elk"):
-            print("SHORTENER MODE")
+            print("SHORTENER MODE TRIGGERED")
             await short_url(client, message, payload)
             return
 
         # Shortener bypass payload extraction
         if payload.startswith("yu3elk"):
-            base64_string = payload[6:-1]
+            base64_string = payload[6:-1]  # 'yu3elk' aur '7' remove
         else:
             base64_string = payload
 
         print(f"BASE64 = {base64_string}")
         
-        # Safe decode execution
+        # Decode to get IDs
         ids = await decode(base64_string)
         print(f"DECODED IDS = {ids}")
 
+    except IndexError:
+        return await message.reply("❌ Invalid Command Format")
     except Exception as e:
         print(f"PAYLOAD ERROR = {e}")
         return await message.reply(f"❌ Invalid Link or Format Error: {e}")
 
+    # Safety check
+    if ids is None:
+        return await message.reply("❌ Failed to process payload")
+
     # ================= FETCH MESSAGES =================
-    temp = await message.reply("Please wait...")
-    msgs = [] # Initialize list to avoid any reference errors
+    temp = await message.reply("⏳ Processing your request, please wait...")
+    msgs = []
 
     try:
-        # Apne confirm kiya ki CHANNEL_ID hi variable name hai:
+        # Handle different ID types
         if isinstance(ids, list):
             msgs = await client.get_messages(chat_id=CHANNEL_ID, message_ids=ids)
-        elif isinstance(ids, int) or (isinstance(ids, str) and ids.isdigit()):
+        elif isinstance(ids, int):
+            single_msg = await client.get_messages(chat_id=CHANNEL_ID, message_ids=ids)
+            msgs = [single_msg] if single_msg else []
+        elif isinstance(ids, str) and ids.isdigit():
             single_msg = await client.get_messages(chat_id=CHANNEL_ID, message_ids=int(ids))
             msgs = [single_msg] if single_msg else []
         else:
-            # Fallback if custom helper function needed
+            # Fallback for custom function
             custom_fetch = await get_messages(client, ids)
             msgs = custom_fetch if isinstance(custom_fetch, list) else [custom_fetch]
 
-        if not msgs or msgs[0] is None:
+        # Validate messages
+        if not msgs or all(msg is None for msg in msgs):
             await temp.delete()
-            return await message.reply("❌ File not found in Database (Messages Empty)")
+            return await message.reply("❌ File not found in Database")
 
     except Exception as fetch_err:
         print(f"FETCH ERROR = {fetch_err}")
-        await temp.delete()
-        return await message.reply(f"❌ File not found in Database\n\n`Error Details: {fetch_err}`")
+        try:
+            await temp.delete()
+        except:
+            pass
+        return await message.reply(f"❌ File not found in Database\n\nError: {str(fetch_err)[:100]}")
 
+    # Delete temp message
     try:
         await temp.delete()
     except:
         pass
 
-   
     # ================= SEND FILES =================
     for msg in msgs:
         if not msg or msg.empty:
