@@ -151,11 +151,17 @@ async def not_joined(client: Client, message: Message):
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
-    user_id = message.from_user.id
-    id = message.from_user.id
-
-    # ✅ PEHLE CHECK
-    is_premium = await is_premium_user(id)
+    try:
+        user_id = message.from_user.id
+        print(f"[START] User {user_id} triggered start command")
+        
+        # Basic reply - test karne ke liye
+        await message.reply_text("✅ Bot is working!")
+        
+    except Exception as e:
+        print(f"[ERROR] Start command failed: {e}")
+        import traceback
+        traceback.print_exc()
 
     # Check if user is banned
     banned_users = await db.get_ban_users()
