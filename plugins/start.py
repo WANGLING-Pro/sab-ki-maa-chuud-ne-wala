@@ -154,25 +154,29 @@ async def start_command(client: Client, message: Message):
     try:
         user_id = message.from_user.id
         print(f"[START] User {user_id} triggered start command")
+
+        # ✅ BAN CHECK
+        banned_users = await db.get_ban_users()
+        print(f"[BAN CHECK] Banned users: {len(banned_users)}")
         
-        # Basic reply - test karne ke liye
-        await message.reply_text("✅ Bot is working!")
+        if user_id in banned_users:
+            print(f"[BAN] User {user_id} is banned")
+            await message.reply_text(
+                "<b>⛔️ You are Banned from using this bot.</b>\n\n"
+                "<i>Contact support if you think this is a mistake.</i>",
+                reply_markup=InlineKeyboardMarkup(
+                    [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
+                )
+            )
+            return
+
+        print(f"[BAN CHECK] User {user_id} is NOT banned ✅")
+        await message.reply_text("✅ Ban check passed!")
         
     except Exception as e:
         print(f"[ERROR] Start command failed: {e}")
         import traceback
         traceback.print_exc()
-
-    # Check if user is banned
-    banned_users = await db.get_ban_users()
-    if user_id in banned_users:
-        return await message.reply_text(
-            "<b>⛔️ You are Banned from using this bot.</b>\n\n"
-            "<i>Contact support if you think this is a mistake.</i>",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
-            )
-        )
 
     # ✅ Check Force Subscription
     if not await is_subscribed(client, user_id):
