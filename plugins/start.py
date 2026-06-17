@@ -11,7 +11,14 @@ from bot import Bot
 from config import *
 from helper_func import *
 from database.database import db
-from database.db_premium import *
+from database.db_premium import (
+    is_premium_user,
+    add_premium,
+    remove_premium,
+    remove_expired_users,
+    check_user_plan,
+    collection
+)
 
 # ================= GLOBALS =================
 
@@ -151,7 +158,9 @@ async def not_joined(client: Client, message: Message):
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
-    try:
+    try: 
+        print("DB TYPE =", type(db))
+
         user_id = message.from_user.id
         print(f"[START] User {user_id} triggered start command")
 
