@@ -216,7 +216,8 @@ async def start_command(client: Client, message: Message):
 
             print(f"PAYLOAD RECEIVED = {payload}")
 
-            # ✅ Shortener check - is_premium already checked above
+            is_premium = await is_premium_user(user_id)
+
             if not is_premium and user_id != OWNER_ID and not basic.startswith("yu3elk"):
                 print(f"SHORTENER MODE TRIGGERED FOR USER {user_id}")
                 await short_url(client, message, basic)
