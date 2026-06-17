@@ -5,9 +5,8 @@ from datetime import datetime, timedelta
 
 # DB
 client = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
-db = client[DB_NAME]
-collection = db["premium_users"]
-
+premium_db = client[DB_NAME]
+collection = premium_db["premium_users"]
 IST = timezone("Asia/Kolkata")
 
 
