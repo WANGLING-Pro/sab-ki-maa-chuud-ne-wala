@@ -17,9 +17,13 @@ def get_now():
     return datetime.now(IST)
 
 
-def get_remaining(expiry: datetime):
-    return expiry - get_now()
+from datetime import timezone
 
+def get_remaining(expiry: datetime):
+    if expiry.tzinfo is None:
+        expiry = IST.localize(expiry)
+
+    return expiry - datetime.now(IST)
 
 # -------------------------
 # Core
