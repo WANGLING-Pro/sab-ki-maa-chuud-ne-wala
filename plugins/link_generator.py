@@ -5,13 +5,16 @@ from bot import Bot
 import asyncio
 from helper_func import encode, admin
 
+print("link_generator.py loaded")
+
 # ============================================================================================#
 # ✅ /batch — Any Channel Batch (Bot must be admin)
 # ============================================================================================#
 
-@Bot.on_message(filters.private & admin & filters.command('batch'))
+@Bot.on_message(filters.private & filters.command("batch"))
 async def batch(client: Client, message: Message):
 
+print("BATCH HANDLER CALLED")
     # Step 1: Ask first message
     while True:
         try:
@@ -203,3 +206,9 @@ async def getlink_handler(client, message):
     link = f"https://t.me/{client.username}?start={base64_string}"
 
     await message.reply(f"Here is your link:-\n\n{link}")
+
+#--------------- Test --------
+
+@Bot.on_message(filters.command("test"))
+async def test(client, message):
+    await message.reply("OK")
