@@ -102,3 +102,10 @@ async def custom_batch(client: Client, message: Message):
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
     await message.reply(f"<b>Here is your custom batch link:</b>\n\n{link}", reply_markup=reply_markup)
+
+
+# ===== TEST COMMAND =====
+
+@Bot.on_message(filters.command("test"))
+async def test(client, message):
+    await message.reply("OK")
