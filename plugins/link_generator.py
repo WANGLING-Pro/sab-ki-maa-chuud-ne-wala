@@ -1,6 +1,6 @@
 #(©)Codexbotz
 
-raise Exception("LINK_GENERATOR FILE LOADED")
+print("LINK_GENERATOR LOADED")
 
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
@@ -112,4 +112,5 @@ async def custom_batch(client: Client, message: Message):
 
 @Bot.on_message(filters.command("test"))
 async def test(client, message):
+    print("TEST COMMAND RECEIVED")
     await message.reply("OK")
