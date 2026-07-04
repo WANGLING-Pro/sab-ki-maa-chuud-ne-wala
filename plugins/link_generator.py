@@ -1,7 +1,5 @@
 #(©)Codexbotz
 
-print("LINK_GENERATOR LOADED")
-
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import Bot
@@ -9,7 +7,6 @@ from pyrogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from asyncio import TimeoutError
 from helper_func import encode, get_message_id, admin
 
-print("LINK_GENERATOR LOADED")
 
 @Bot.on_message(filters.private & admin & filters.command('batch'))
 async def batch(client: Client, message: Message):
@@ -108,9 +105,4 @@ async def custom_batch(client: Client, message: Message):
     await message.reply(f"<b>Here is your custom batch link:</b>\n\n{link}", reply_markup=reply_markup)
 
 
-# ===== TEST COMMAND =====
-
-@Bot.on_message(filters.command("test"))
-async def test(client, message):
-    print("TEST COMMAND RECEIVED")
-    await message.reply("OK")
+#××××××××××××××××××××××× End ××××××××××××××××××××××××#
