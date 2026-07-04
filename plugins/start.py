@@ -42,28 +42,28 @@ def _is_admin(uid: int) -> bool:
         return uid == OWNER_ID
 
 # Non-command, private messages: fixed text for non-admins
-@Bot.on_message(filters.private & ~filters.command(["start", "help", "about"]))
-async def fixed_text_for_non_admins(client: Client, message: Message):
-    uid = message.from_user.id
+#@Bot.on_message(filters.private & #~filters.command(["start", "help", "about"]))
+#async def fixed_text_for_non_admins(client: Client, #message: Message):
+#    uid = message.from_user.id
 
-    # ✅ Agar Owner/Admin hai → fixed reply skip kar do, aur dusre handlers ko allow karo
-    if _is_admin(uid):
-        return  # <-- is return ka matlab sirf yeh handler se exit karna, dusre handlers normal chalenge
+    # ✅ Agar Owner/Admin hai → fixed reply skip kar #do, aur dusre handlers ko allow karo
+   # if _is_admin(uid):
+     #   return  # <-- is return ka matlab sirf yeh #handler se exit karna, dusre handlers normal chalenge
 
     # ✅ Agar banned user hai
-    try:
-        banned_users = await db.get_ban_users()
-        if uid in banned_users:
-            await message.reply_text("⛔️ You are banned. Contact support.")
-            return
-    except Exception:
-        pass
+  #  try:
+     #   banned_users = await db.get_ban_users()
+     #   if uid in banned_users:
+     #       await message.reply_text("⛔️ You are #banned. Contact support.")
+        #    return
+  #  except Exception:
+    #    pass
 
     # ✅ Normal users -> sirf fixed reply
-    try:
-        await message.reply_text("<b><blockquote>♲︎︎︎ Pᴏᴡᴇʀᴇᴅ Bʏ : @P_world_81🔞</blockquote></b>")
-    except Exception:
-        await message.reply_text("<b><blockquote>♲︎︎︎ Pᴏᴡᴇʀᴇᴅ Bʏ : @P_world_81🔞</blockquote></b>")
+  #  try:
+    #    await message.reply_text("<b><blockquote>♲︎︎︎ #Pᴏᴡᴇʀᴇᴅ Bʏ : @P_world_81🔞</blockquote></b>")
+   # except Exception:
+     #   await message.reply_text("<b><blockquote>♲︎︎︎ #Pᴏᴡᴇʀᴇᴅ Bʏ : @P_world_81🔞</blockquote></b>")
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
