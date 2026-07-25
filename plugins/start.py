@@ -184,7 +184,6 @@ async def start_command(client: Client, message: Message):
             return
 
         print(f"[BAN CHECK] User {user_id} is NOT banned ✅")
-        await message.reply_text("✅ Ban check passed!")
 
     except Exception as e:
         print(f"[ERROR] Start command failed: {e}")
