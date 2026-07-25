@@ -13,8 +13,7 @@ print("link_generator.py loaded")
 
 @Bot.on_message(filters.private & filters.command("batch"))
 async def batch(client: Client, message: Message):
-
-print("BATCH HANDLER CALLED")
+    print("BATCH HANDLER CALLED")
     # Step 1: Ask first message
     while True:
         try:
