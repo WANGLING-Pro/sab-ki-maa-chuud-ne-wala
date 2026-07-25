@@ -32,7 +32,11 @@ async def short_url(client: Client, message: Message, base64_string):
     try:
         username = client.me.username if client.me.username else "botusername"
         prem_link = f"https://t.me/{username}?start=yu3elk{base64_string}7"
-        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
+
+        url, api = await db.get_shortener_config()
+        url = url or SHORTLINK_URL
+        api = api or SHORTLINK_API
+        short_link = await get_shortlink(url, api, prem_link)
 
         buttons = [
             [
@@ -167,7 +171,7 @@ async def start_command(client: Client, message: Message):
         # ✅ BAN CHECK
         banned_users = await db.get_ban_users()
         print(f"[BAN CHECK] Banned users: {len(banned_users)}")
-        
+
         if user_id in banned_users:
             print(f"[BAN] User {user_id} is banned")
             await message.reply_text(
@@ -181,7 +185,7 @@ async def start_command(client: Client, message: Message):
 
         print(f"[BAN CHECK] User {user_id} is NOT banned ✅")
         await message.reply_text("✅ Ban check passed!")
-        
+
     except Exception as e:
         print(f"[ERROR] Start command failed: {e}")
         import traceback
@@ -217,8 +221,9 @@ async def start_command(client: Client, message: Message):
             print(f"PAYLOAD RECEIVED = {payload}")
 
             is_premium = await is_premium_user(user_id)
+            shortener_status = await db.get_shortener_status()
 
-            if not is_premium and user_id != OWNER_ID and not basic.startswith("yu3elk"):
+            if shortener_status == "on" and not is_premium and user_id != OWNER_ID and not basic.startswith("yu3elk"):
                 print(f"SHORTENER MODE TRIGGERED FOR USER {user_id}")
                 await short_url(client, message, basic)
                 return
@@ -240,7 +245,7 @@ async def start_command(client: Client, message: Message):
             # Old code pattern - string split by "-"
             argument = str(ids).split("-")
             ids = []
-            
+
             if len(argument) == 3:
                 try:
                     start = int(int(argument[1]) / abs(client.db_channel.id))
@@ -362,15 +367,21 @@ async def start_command(client: Client, message: Message):
     else:
         # ================= NORMAL START MESSAGE =================
 
-        reply_markup = InlineKeyboardMarkup(
+        start_buttons = [
+            [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/P_World_81")],
             [
-                [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/P_World_81")],
-                [
-                    InlineKeyboardButton("• ᴀʙᴏᴜᴛ", callback_data="about"),
-                    InlineKeyboardButton('ʜᴇʟᴘ •', callback_data="help")
-                ]
+                InlineKeyboardButton("• ᴀʙᴏᴜᴛ", callback_data="about"),
+                InlineKeyboardButton('ʜᴇʟᴘ •', callback_data="help")
             ]
-        )
+        ]
+
+        if user_id == OWNER_ID or await db.admin_exist(user_id):
+            start_buttons.append(
+                [InlineKeyboardButton("⚙️ ꜱʜᴏʀᴛᴇɴᴇʀ ꜱᴇᴛᴛɪɴɢꜱ", callback_data="shortener_menu")]
+            )
+
+        reply_markup = InlineKeyboardMarkup(start_buttons)
+
         await message.reply_photo(
             photo=START_PIC,
             caption=START_MSG.format(
@@ -435,7 +446,7 @@ async def remove_premium_cmd(client, msg):
 @Bot.on_message(filters.command('premium_users') & filters.private & admin)
 async def list_premium(client, message):
     from pytz import timezone
-    
+
     ist = timezone("Asia/Kolkata")
     users = collection.find({})
     final = ["<b>Active Premium Users:</b>\n"]
