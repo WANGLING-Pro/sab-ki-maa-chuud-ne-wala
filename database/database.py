@@ -16,6 +16,7 @@ class Database:
         self.verify = self.db["verify"]
         self.req_fsub = self.db["request_fsub"]
         self.verify_count = self.db["verify_count"]
+        self.settings = self.db["settings"]
 
     # ================= USERS =================
 
@@ -180,6 +181,32 @@ class Database:
         pipeline = [{"$group": {"_id": None, "total": {"$sum": "$count"}}}]
         result = await self.verify_count.aggregate(pipeline).to_list(1)
         return result[0]["total"] if result else 0
+
+    # ================= SHORTENER SETTINGS =================
+
+    async def get_shortener_status(self):
+        data = await self.settings.find_one({"_id": "shortener"})
+        return data.get("status", "on") if data else "on"
+
+    async def set_shortener_status(self, status: str):
+        await self.settings.update_one(
+            {"_id": "shortener"},
+            {"$set": {"status": status}},
+            upsert=True
+        )
+
+    async def get_shortener_config(self):
+        data = await self.settings.find_one({"_id": "shortener"})
+        if data and data.get("url") and data.get("api"):
+            return data.get("url"), data.get("api")
+        return None, None
+
+    async def set_shortener_config(self, url: str, api: str):
+        await self.settings.update_one(
+            {"_id": "shortener"},
+            {"$set": {"url": url, "api": api}},
+            upsert=True
+        )
 
 
 db = Database(DB_URI, DB_NAME)
