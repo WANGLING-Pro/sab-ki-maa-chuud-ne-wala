@@ -6,11 +6,15 @@
 #
 # All rights reserved.
 
-from pyrogram import Client 
+from pyrogram import Client, filters
 from bot import Bot
 from config import *
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import db
+from helper_func import admin
+
+# Tracks which admins are currently expected to send shortener URL+API text
+pending_shortener_input = {}
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -90,6 +94,57 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
+    elif data == "shortener_menu":
+        if not (query.from_user.id == OWNER_ID or await db.admin_exist(query.from_user.id)):
+            return await query.answer("⛔ Not allowed", show_alert=True)
+
+        status = await db.get_shortener_status()
+        status_text = "🟢 ON" if status == "on" else "🔴 OFF"
+        toggle_text = "🔴 Turn OFF" if status == "on" else "🟢 Turn ON"
+        new_status = "off" if status == "on" else "on"
+
+        await query.message.edit_text(
+            f"<b>⚙️ Shortener Settings</b>\n\nCurrent Status: {status_text}",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton(toggle_text, callback_data=f"shortener_toggle_{new_status}")],
+                [InlineKeyboardButton("🔑 Set API & URL", callback_data="shortener_setapi")],
+                [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="start")]
+            ])
+        )
+
+    elif data.startswith("shortener_toggle_"):
+        if not (query.from_user.id == OWNER_ID or await db.admin_exist(query.from_user.id)):
+            return await query.answer("⛔ Not allowed", show_alert=True)
+
+        new_status = data.split("_")[-1]
+        await db.set_shortener_status(new_status)
+        await query.answer(f"Shortener turned {new_status.upper()}")
+
+        status_text = "🟢 ON" if new_status == "on" else "🔴 OFF"
+        toggle_text = "🔴 Turn OFF" if new_status == "on" else "🟢 Turn ON"
+        flip_status = "off" if new_status == "on" else "on"
+
+        await query.message.edit_text(
+            f"<b>⚙️ Shortener Settings</b>\n\nCurrent Status: {status_text}",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton(toggle_text, callback_data=f"shortener_toggle_{flip_status}")],
+                [InlineKeyboardButton("🔑 Set API & URL", callback_data="shortener_setapi")],
+                [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="start")]
+            ])
+        )
+
+    elif data == "shortener_setapi":
+        if not (query.from_user.id == OWNER_ID or await db.admin_exist(query.from_user.id)):
+            return await query.answer("⛔ Not allowed", show_alert=True)
+
+        pending_shortener_input[query.from_user.id] = True
+        await query.message.edit_text(
+            "<b>🔑 Send your Shortener URL and API Key in one message, space se separate karke:</b>\n\n"
+            "<code>yourdomain.com your_api_key</code>\n\n"
+            "Example:\n<code>adrinolinks.in 8f2b91xyz</code>",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("‹ ᴄᴀɴᴄᴇʟ", callback_data="shortener_menu")]])
+        )
+
 
     elif data == "close":
         await query.message.delete()
@@ -166,3 +221,25 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 #
 # All rights reserved.
 #
+
+
+@Bot.on_message(filters.private & filters.text & admin, group=1)
+async def catch_shortener_input(client, message: Message):
+    uid = message.from_user.id
+    if not pending_shortener_input.get(uid):
+        return
+
+    if message.text.startswith("/"):
+        return
+
+    parts = message.text.strip().split(" ", 1)
+    if len(parts) != 2:
+        return await message.reply("❌ Wrong format. Send like:\n<code>yourdomain.com your_api_key</code>")
+
+    url, api = parts[0].strip(), parts[1].strip()
+    await db.set_shortener_config(url, api)
+    pending_shortener_input.pop(uid, None)
+
+    await message.reply(
+        f"✅ Shortener Config Updated!\n\nURL: <code>{url}</code>\nAPI: <code>{api}</code>"
+    )
