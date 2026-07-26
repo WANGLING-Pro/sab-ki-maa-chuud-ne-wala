@@ -28,6 +28,7 @@ CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "")) #Your db channel Id
 OWNER = os.environ.get("OWNER", "I_am_nerev_die") # Owner username without @
 OWNER_ID = int(os.environ.get("OWNER_ID", "7596496109")) # Owner id
 #--------------------------------------------
+BASE_URL = os.environ.get("BASE_URL", "")
 PORT = os.environ.get("PORT", "8001")
 #--------------------------------------------
 DB_URI = os.environ.get("DATABASE_URL", "")
