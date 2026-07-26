@@ -122,16 +122,7 @@ async def batch(client: Client, message: Message):
 
     await message.reply(f"Here is your link:-\n\n{link}", reply_markup=reply_markup)
 
-    # Attach button to last DB message
-    try:
-        await client.edit_message_reply_markup(
-            chat_id=client.db_channel.id,
-            message_id=new_ids[-1],
-            reply_markup=reply_markup
-        )
-    except:
-        pass
-
+   
 
 # ============================================================================================#
 # ✅ /custom_batch
