@@ -187,11 +187,19 @@ async def custom_batch(client: Client, message: Message):
 async def getlink_handler(client, message):
 
     if not message.reply_to_message:
-        return await message.reply("⚠️ Reply to ANY message to generate link.")
+        return await message.reply("⚠️ ʀᴇᴘʟʏ ᴛᴏ ᴀɴʏ ᴍsɢ ᴛᴏ ɢᴇɴᴇʀᴀᴛᴇ ʟɪɴᴋ.")
 
     msg = message.reply_to_message
-    msg_id = msg.id
 
+    try:
+        copied = await msg.copy(chat_id=client.db_channel.id, disable_notification=True)
+    except FloodWait as e:
+        await asyncio.sleep(e.x)
+        copied = await msg.copy(chat_id=client.db_channel.id, disable_notification=True)
+    except Exception as e:
+        return await message.reply(f"❌ ғᴀɪʟᴇᴅ ᴛᴏ sᴀᴠᴇ ᴍsɢ: {e}")
+
+    msg_id = copied.id
     base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
 
