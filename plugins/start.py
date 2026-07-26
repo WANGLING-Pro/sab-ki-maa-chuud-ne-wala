@@ -6,6 +6,7 @@ from pyrogram import Client, filters
 from pyrogram.enums import ParseMode, ChatMemberStatus
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait
+from plugins.route import create_verify_token
 
 from bot import Bot
 from config import *
