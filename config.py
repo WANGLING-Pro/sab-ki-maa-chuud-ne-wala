@@ -28,7 +28,9 @@ CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "")) #Your db channel Id
 OWNER = os.environ.get("OWNER", "I_am_nerev_die") # Owner username without @
 OWNER_ID = int(os.environ.get("OWNER_ID", "7596496109")) # Owner id
 #--------------------------------------------
-BASE_URL = os.environ.get("BASE_URL", "")
+GATE_URL = "https://your-relay-gate.onrender.com"   # Relay Gate ka actual deployed URL
+GATE_API_KEY = "your-shared-secret-key"              # Relay Gate ke env var GATE_API_KEY jaisa hi
+BOT_SOURCE_NAME = "bot1"                             # har bot ke liye alag naam (bot1, bot2, etc.)
 PORT = os.environ.get("PORT", "8001")
 #--------------------------------------------
 DB_URI = os.environ.get("DATABASE_URL", "")
