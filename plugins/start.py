@@ -39,9 +39,12 @@ async def short_url(client: Client, message: Message, base64_string):
         api = api or SHORTLINK_API
         short_link = await get_shortlink(url, api, prem_link)
 
+        token = create_verify_token(short_link)
+        gate_link = f"{BASE_URL}/verify?u={token}"
+
         buttons = [
             [
-                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
+                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=gate_link),
                 InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)
             ],
             [
