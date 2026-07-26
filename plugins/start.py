@@ -1,12 +1,12 @@
 # ================= IMPORTS =================
 
 import asyncio
+import aiohttp
 from datetime import datetime, timedelta
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode, ChatMemberStatus
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait
-from plugins.route import create_verify_token
 
 from bot import Bot
 from config import *
@@ -27,6 +27,42 @@ BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 chat_data_cache = {}
 
+# ================= RELAY GATE CONFIG =================
+# Central verification server shared across all bots.
+# Set these two values from environment variables (config.py / .env),
+# don't hardcode the API key directly in source if this repo is public.
+
+GATE_URL = getattr(__import__("config"), "GATE_URL", "https://your-relay-gate.onrender.com")
+GATE_API_KEY = getattr(__import__("config"), "GATE_API_KEY", "")
+BOT_SOURCE_NAME = getattr(__import__("config"), "BOT_SOURCE_NAME", "unknown_bot")
+
+
+async def get_gate_link(real_url: str) -> str:
+    """
+    Calls the centralized Relay Gate's /api/generate endpoint
+    and returns a /verify?u=<token> link. Falls back to the raw
+    shortener link if the gate is unreachable (so the bot never
+    hard-fails just because the gate is briefly down).
+    """
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{GATE_URL}/api/generate",
+                json={"url": real_url, "source": BOT_SOURCE_NAME},
+                headers={"X-API-Key": GATE_API_KEY},
+                timeout=aiohttp.ClientTimeout(total=8)
+            ) as resp:
+                data = await resp.json()
+                verify_url = data.get("verify_url")
+                if verify_url:
+                    return verify_url
+                print(f"GATE ERROR (bad response): {data}")
+    except Exception as e:
+        print(f"GATE ERROR (request failed): {e}")
+
+    return real_url  # fallback — better than crashing the flow
+
+
 # ================= SHORT URL FUNCTION =================
 
 async def short_url(client: Client, message: Message, base64_string):
@@ -39,8 +75,8 @@ async def short_url(client: Client, message: Message, base64_string):
         api = api or SHORTLINK_API
         short_link = await get_shortlink(url, api, prem_link)
 
-        token = create_verify_token(short_link)
-        gate_link = f"{BASE_URL}/verify?u={token}"
+        # --- Centralized Relay Gate instead of local dummy server ---
+        gate_link = await get_gate_link(short_link)
 
         buttons = [
             [
