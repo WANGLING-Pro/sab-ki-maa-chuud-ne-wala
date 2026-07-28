@@ -2,6 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from pyrogram.errors import FloodWait
 from bot import Bot
+from config import *
 import asyncio
 from helper_func import encode, admin
 
@@ -77,6 +78,7 @@ async def batch(client: Client, message: Message):
     status = await message.reply("⏳ ᴍᴇssᴀɢᴇs ᴄᴏᴘʏ ʜᴏ ʀᴀʜᴀ ʜᴀɪ ᴡᴀɪᴛ ᴋᴀʀ ʙᴇ...")
 
     new_ids = []
+    last_copied_msg = None  # keep a handle to the final copied message in db_channel
 
     start = min(f_msg_id, s_msg_id)
     end = max(f_msg_id, s_msg_id)
@@ -89,6 +91,7 @@ async def batch(client: Client, message: Message):
 
             copied = await msg.copy(client.db_channel.id)
             new_ids.append(copied.id)
+            last_copied_msg = copied
 
             await asyncio.sleep(0.3)
 
@@ -122,7 +125,13 @@ async def batch(client: Client, message: Message):
 
     await message.reply(f"Here is your link:-\n\n{link}", reply_markup=reply_markup)
 
-   
+    # ✅ Add the same Share URL button under the DB channel post (last message of the batch)
+    if not DISABLE_CHANNEL_BUTTON and last_copied_msg:
+        try:
+            await last_copied_msg.edit_reply_markup(reply_markup)
+        except Exception as e:
+            print(f"DB CHANNEL BUTTON ERROR (batch): {e}")
+
 
 # ============================================================================================#
 # ✅ /custom_batch
@@ -131,6 +140,7 @@ async def batch(client: Client, message: Message):
 @Bot.on_message(filters.private & admin & filters.command("custom_batch"))
 async def custom_batch(client: Client, message: Message):
     collected = []
+    last_copied_msg = None
     STOP_KEYBOARD = ReplyKeyboardMarkup([["STOP"]], resize_keyboard=True)
 
     await message.reply(
@@ -154,6 +164,7 @@ async def custom_batch(client: Client, message: Message):
         try:
             sent = await user_msg.copy(client.db_channel.id, disable_notification=True)
             collected.append(sent.id)
+            last_copied_msg = sent
         except FloodWait as e:
             await asyncio.sleep(e.x)
         except:
@@ -177,6 +188,13 @@ async def custom_batch(client: Client, message: Message):
     )
 
     await message.reply(f"<b>Here is your link:-</b>\n\n{link}", reply_markup=reply_markup)
+
+    # ✅ Add the same Share URL button under the DB channel post (last message of the batch)
+    if not DISABLE_CHANNEL_BUTTON and last_copied_msg:
+        try:
+            await last_copied_msg.edit_reply_markup(reply_markup)
+        except Exception as e:
+            print(f"DB CHANNEL BUTTON ERROR (custom_batch): {e}")
 
 
 # ============================================================================================#
@@ -203,7 +221,18 @@ async def getlink_handler(client, message):
     base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    await message.reply(f"Here is your link:-\n\n{link}")
+    reply_markup = InlineKeyboardMarkup(
+        [[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]]
+    )
+
+    await message.reply(f"Here is your link:-\n\n{link}", reply_markup=reply_markup)
+
+    # ✅ Add the same Share URL button under the DB channel post
+    if not DISABLE_CHANNEL_BUTTON:
+        try:
+            await copied.edit_reply_markup(reply_markup)
+        except Exception as e:
+            print(f"DB CHANNEL BUTTON ERROR (getlink): {e}")
 
 #--------------- Test --------
 
