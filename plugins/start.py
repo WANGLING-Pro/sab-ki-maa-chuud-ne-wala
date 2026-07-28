@@ -359,7 +359,8 @@ async def start_command(client: Client, message: Message):
                     chat_id=user_id,
                     caption=caption,
                     parse_mode=ParseMode.HTML,
-                    protect_content=PROTECT_CONTENT
+                    protect_content=PROTECT_CONTENT,
+                    reply_markup=None  # strip DB-channel's Share URL button
                 )
                 sent_msgs.append(s)
                 await asyncio.sleep(0.4)
@@ -371,7 +372,8 @@ async def start_command(client: Client, message: Message):
                         chat_id=user_id,
                         caption=caption,
                         parse_mode=ParseMode.HTML,
-                        protect_content=PROTECT_CONTENT
+                        protect_content=PROTECT_CONTENT,
+                        reply_markup=None  # strip DB-channel's Share URL button
                     )
                     sent_msgs.append(s)
                 except:
