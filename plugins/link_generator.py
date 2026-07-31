@@ -78,27 +78,47 @@ async def batch(client: Client, message: Message):
     status = await message.reply("⏳ ᴍᴇssᴀɢᴇs ᴄᴏᴘʏ ʜᴏ ʀᴀʜᴀ ʜᴀɪ ᴡᴀɪᴛ ᴋᴀʀ ʙᴇ...")
 
     new_ids = []
+    failed_ids = []
     last_copied_msg = None  # keep a handle to the final copied message in db_channel
 
     start = min(f_msg_id, s_msg_id)
     end = max(f_msg_id, s_msg_id)
+    total = end - start + 1
 
-    for i in range(start, end + 1):
-        try:
-            msg = await client.get_messages(source_chat_id, i)
-            if not msg or msg.empty:
-                continue
+    for idx, i in enumerate(range(start, end + 1), 1):
+        # Retry loop for this single message — FloodWait no longer skips it
+        for attempt in range(4):
+            try:
+                msg = await client.get_messages(source_chat_id, i)
+                if not msg or msg.empty:
+                    break  # nothing to copy for this id, move to next i
 
-            copied = await msg.copy(client.db_channel.id)
-            new_ids.append(copied.id)
-            last_copied_msg = copied
+                copied = await msg.copy(client.db_channel.id)
+                new_ids.append(copied.id)
+                last_copied_msg = copied
+                break  # success, exit retry loop
 
-            await asyncio.sleep(0.3)
+            except FloodWait as e:
+                wait_for = int(e.value) if hasattr(e, "value") else int(e.x)
+                await asyncio.sleep(wait_for + 1)
+                # loop again to retry the SAME message id
+            except Exception as ex:
+                print(f"BATCH COPY ERROR at id {i}: {ex}")
+                failed_ids.append(i)
+                break
+        else:
+            # exhausted all retries
+            failed_ids.append(i)
 
-        except FloodWait as e:
-            await asyncio.sleep(e.x)
-        except:
-            continue
+        # gentle pacing to avoid tripping flood control in the first place
+        await asyncio.sleep(1.0)
+
+        # progress update every 10 messages so it never looks "stuck"
+        if idx % 10 == 0:
+            try:
+                await status.edit(f"⏳ ᴄᴏᴘʏɪɴɢ... {idx}/{total} ᴅᴏɴᴇ")
+            except Exception:
+                pass
 
     # ✅ DELETE ONLY STATUS MESSAGE
     try:
@@ -108,6 +128,12 @@ async def batch(client: Client, message: Message):
 
     if not new_ids:
         return await message.reply("❌ ᴋᴏɪ ᴍᴇssᴀɢᴇs ᴄᴏᴘʏ ɴʜɪ ʜᴜᴀ ᴀʙ ɢᴀɴᴅ ᴅᴇ ᴄʜᴀᴀʟ...")
+
+    if failed_ids:
+        await message.reply(
+            f"⚠️ {len(failed_ids)} messages copy nahi ho paye (deleted/inaccessible ho sakte hain). "
+            f"Baaki {len(new_ids)} ka link neeche hai."
+        )
 
     # Step 5: Generate link
     db_id = abs(client.db_channel.id)
