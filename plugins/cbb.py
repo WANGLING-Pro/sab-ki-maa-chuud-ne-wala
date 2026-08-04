@@ -65,33 +65,47 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
 
     elif data == "premium":
-        await query.message.delete()
-        await client.send_photo(
+        sent_msg = await client.send_photo(
             chat_id=query.message.chat.id,
             photo=QR_PIC,
             caption=(
-                f"👋 {query.from_user.username}\n\n"
-                f"🎖️ Available Plans :\n\n"
-                f"● {PRICE1}  For 7 Days Prime Membership\n\n"
-                f"● {PRICE2}  For 1 Month Prime Membership\n\n"
-                f"● {PRICE3}  For 3 Months Prime Membership\n\n"
-                f"● {PRICE4}  For 6 Months Prime Membership\n\n"
-                f"● {PRICE5}  For 1 Year Prime Membership\n\n\n"
-                f"💵 ASK UPI ID TO ADMIN AND PAY THERE -  <code>{UPI_ID}</code>\n\n\n"
-                f"♻️ After Payment You Will Get Instant Membership \n\n\n"
-                f"‼️ Must Send Screenshot after payment & If anyone want custom time membrship then ask admin"
+                f"👑 <b>Welcome to Premium</b> 👑\n"
+                f"<i>Step into the VIP zone</i>\n\n"
+                f"🎁 <b>What You Unlock:</b>\n"
+                f"⭐ Zero ads, zero waiting — instant access\n"
+                f"⭐ Priority replies whenever you need help\n"
+                f"⭐ Early access to new drops & exclusive content\n\n"
+                f"💎 <b>Pick Your Plan:</b>\n\n"
+                f"🔸 7 Days — <b>{PRICE1}</b>\n"
+                f"🔸 1 Month — <b>{PRICE2}</b>\n"
+                f"🔸 3 Months — <b>{PRICE3}</b>\n"
+                f"🔸 6 Months — <b>{PRICE4}</b>\n"
+                f"🔸 1 Year — <b>{PRICE5}</b>\n\n"
+                f"💳 <b>How to Pay:</b>\n"
+                f"UPI ID → <code>{UPI_ID}</code>\n"
+                f"<i>(tap to copy instantly)</i>\n\n"
+                f"✅ Pay → 📸 Send screenshot → ⚡ Get instant activation\n\n"
+                f"🎯 Want a custom plan? Just ping the admin below.\n\n"
+                f"🚨 <i>Limited slots available — don't miss out!</i>"
             ),
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton(
-                            "ADMIN 24/7", url=(SCREENSHOT_URL)
-                        )
-                    ],
-                    [InlineKeyboardButton("🔒 Close", callback_data="close")],
+                        InlineKeyboardButton("👨‍💼 Talk to Admin", url=SCREENSHOT_URL),
+                        InlineKeyboardButton("📢 Join Channel", url=MAIN_CHANNEL_URL)
+                    ]
                 ]
             )
         )
+
+        async def _auto_delete(msg, delay):
+            await asyncio.sleep(delay)
+            try:
+                await msg.delete()
+            except Exception:
+                pass
+
+        asyncio.create_task(_auto_delete(sent_msg, 120))
 
 
     elif data == "shortener_menu":
