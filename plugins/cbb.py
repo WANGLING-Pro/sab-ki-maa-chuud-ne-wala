@@ -97,7 +97,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                     ]
                 ]
             ),
-            message_effect_id=5046509860389126442
+            effect_id=5046509860389126442
         )
 
         async def _auto_delete(msg, delay):
