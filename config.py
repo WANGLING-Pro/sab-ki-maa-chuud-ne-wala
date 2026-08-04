@@ -105,11 +105,11 @@ SCREENSHOT_URL = os.environ.get("SCREENSHOT_URL", f"t.me/I_am_nerev_die")
 #7 Days
 PRICE1 = os.environ.get("PRICE1", "50 rs")
 #1 Month
-PRICE2 = os.environ.get("PRICE2", "150 rs")
+PRICE2 = os.environ.get("PRICE2", "120 rs")
 #3 Month
-PRICE3 = os.environ.get("PRICE3", "400 rs")
+PRICE3 = os.environ.get("PRICE3", "300 rs")
 #6 Month
-PRICE4 = os.environ.get("PRICE4", "700 rs")
+PRICE4 = os.environ.get("PRICE4", "599 rs")
 #1 Year
 PRICE5 = os.environ.get("PRICE5", "1199 rs")
 
