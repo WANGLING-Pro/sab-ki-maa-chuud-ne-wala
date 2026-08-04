@@ -98,6 +98,14 @@ async def short_url(client: Client, message: Message, base64_string):
     except Exception as e:
         print(f"SHORT_URL ERROR = {e}")
 
+
+        await message.reply_photo(
+            photo=SHORTENER_PIC,
+            caption=SHORT_MSG.format(),
+            reply_markup=InlineKeyboardMarkup(buttons),
+            message_effect_id=5044134455711629726
+        )
+
 # ================= FORCE SUB FUNCTION =================
 
 async def not_joined(client: Client, message: Message):
