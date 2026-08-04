@@ -70,24 +70,24 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             chat_id=query.message.chat.id,
             photo=QR_PIC,
             caption=(
-                f"👑 <b>Welcome to Premium</b> 👑\n"
+                f"✨ 𝗘𝘅𝗰𝗹𝘂𝘀𝗶𝘃𝗲 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗠𝗲𝗺𝗯𝗲𝗿𝘀𝗵𝗶𝗽 ✨\n"
                 f"<i>Step into the VIP zone</i>\n\n"
-                f"🎁 <b>What You Unlock:</b>\n"
-                f"⭐ Zero ads, zero waiting — instant access\n"
-                f"⭐ Priority replies whenever you need help\n"
-                f"⭐ Early access to new drops & exclusive content\n\n"
-                f"💎 <b>Pick Your Plan:</b>\n\n"
-                f"🔸 7 Days — <b>{PRICE1}</b>\n"
-                f"🔸 1 Month — <b>{PRICE2}</b>\n"
-                f"🔸 3 Months — <b>{PRICE3}</b>\n"
-                f"🔸 6 Months — <b>{PRICE4}</b>\n"
-                f"🔸 1 Year — <b>{PRICE5}</b>\n\n"
-                f"💳 <b>How to Pay:</b>\n"
-                f"UPI ID → <code>{UPI_ID}</code>\n"
-                f"<i>(tap to copy instantly)</i>\n\n"
-                f"✅ Pay → 📸 Send screenshot → ⚡ Get instant activation\n\n"
-                f"🎯 Want a custom plan? Just ping the admin below.\n\n"
-                f"🚨 <i>Seats are LIMITED for Premium Members – Grab Yours Now!</i>"
+                f"🎁 <b>ᴡʜᴀᴛ ʏᴏᴜ ᴜɴʟᴏᴄᴋ:</b>\n"
+                f"✔︎ ᴢᴇʀᴏ ᴀᴅs, ᴢᴇʀᴏ ᴡᴀɪᴛɪɴɢ — ɪɴsᴛᴀɴᴛ ᴀᴄᴄᴇss\n"
+                f"✔︎ ᴘʀɪᴏʀɪᴛʏ ʀᴇᴘʟɪᴇs ᴡʜᴇɴᴇᴠᴇʀ ʏᴏᴜ ɴᴇᴇᴅ ʜᴇʟᴘ\n"
+                f"✔︎ ᴇᴀʀʟʏ ᴀᴄᴄᴇss ᴛᴏ ɴᴇᴡ ᴅʀᴏᴘs & ᴇxᴄʟᴜsɪᴠᴇ  ᴄᴏɴᴛᴇɴᴛ\n\n"
+                f"💌 <b>ᴘɪᴄᴋ ʏᴏᴜʀ ᴘʟᴀɴ:</b>\n\n"
+                f"❣︎ 7 ᴅᴀʏs — <b>{PRICE1}</b>\n"
+                f"❣︎ 1 ᴍᴏɴᴛʜ — <b>{PRICE2}</b>\n"
+                f"❣︎ 3 ᴍᴏɴᴛʜs — <b>{PRICE3}</b>\n"
+                f"❣︎ 6 ᴍᴏɴᴛʜs — <b>{PRICE4}</b>\n"
+                f"❣︎ 1 ʏᴇᴀʀ — <b>{PRICE5}</b>\n\n"
+                f"💸 <b>ʜᴏᴡ ᴛᴏ ᴘᴀʏ:</b>\n"
+                f"ᴜᴘɪ ɪᴅ → <code>{UPI_ID}</code>\n"
+                f"<i>(ᴛᴀᴘ ᴛᴏ ᴄᴏᴘʏ ɪɴsᴛᴀɴᴛʟʏ)</i>\n\n"
+                f"✔︎ ᴘᴀʏ → 📸 sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ → ⚡ ɢᴇᴛ ɪɴsᴛᴀɴᴛ ᴀᴄᴛɪᴠᴀᴛɪᴏɴ\n\n"
+                f"🎯 ᴡᴀɴᴛ ᴀ ᴄᴜsᴛᴏᴍ ᴘʟᴀɴ? ᴊᴜsᴛ ᴘɪɴɢ ᴛʜᴇ ᴀᴅᴍɪɴ ʙᴇʟᴏᴡ.\n\n"
+                f"🚨 <i>sᴇᴀᴛs ᴀʀᴇ 𝖫𝖨𝖬𝖨𝖳𝖤𝖣 ғᴏʀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀs – ɢʀᴀʙ ʏᴏᴜʀs ɴᴏᴡ!</i>"
             ),
             reply_markup=InlineKeyboardMarkup(
                 [
@@ -111,39 +111,39 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "shortener_menu":
         if not (query.from_user.id == OWNER_ID or await db.admin_exist(query.from_user.id)):
-            return await query.answer("⛔ Not allowed", show_alert=True)
+            return await query.answer("⛔ ɴᴏᴛ ᴀʟʟᴏᴡᴇᴅ", show_alert=True)
 
         status = await db.get_shortener_status()
-        status_text = "🟢 ON" if status == "on" else "🔴 OFF"
-        toggle_text = "🔴 Turn OFF" if status == "on" else "🟢 Turn ON"
+        status_text = "🟢 ᴏɴ" if status == "on" else "🔴 ᴏғғ"
+        toggle_text = "🔴 ᴛᴜʀɴ ᴏғғ" if status == "on" else "🟢 ᴛᴜʀɴ ᴏɴ"
         new_status = "off" if status == "on" else "on"
 
         await query.message.edit_text(
-            f"<b>⚙️ Shortener Settings</b>\n\nCurrent Status: {status_text}",
+            f"<b>⚙️ sʜᴏʀᴛᴇɴᴇʀ sᴇᴛᴛɪɴɢs</b>\n\nCurrent Status: {status_text}",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton(toggle_text, callback_data=f"shortener_toggle_{new_status}")],
-                [InlineKeyboardButton("🔑 Set API & URL", callback_data="shortener_setapi")],
+                [InlineKeyboardButton("🔑 sᴇᴛ ᴀᴘɪ & ᴜʀʟ", callback_data="shortener_setapi")],
                 [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="start")]
             ])
         )
 
     elif data.startswith("shortener_toggle_"):
         if not (query.from_user.id == OWNER_ID or await db.admin_exist(query.from_user.id)):
-            return await query.answer("⛔ Not allowed", show_alert=True)
+            return await query.answer("⛔ ɴᴏᴛ ᴀʟʟᴏᴡᴇᴅ", show_alert=True)
 
         new_status = data.split("_")[-1]
         await db.set_shortener_status(new_status)
-        await query.answer(f"Shortener turned {new_status.upper()}")
+        await query.answer(f"sʜᴏʀᴛᴇɴᴇʀ ᴛᴜʀɴᴇᴅ {new_status.upper()}")
 
-        status_text = "🟢 ON" if new_status == "on" else "🔴 OFF"
-        toggle_text = "🔴 Turn OFF" if new_status == "on" else "🟢 Turn ON"
+        status_text = "🟢 ᴏɴ" if new_status == "on" else "🔴 ᴏғғ"
+        toggle_text = "🔴 ᴛᴜʀɴ ᴏғғ" if new_status == "on" else "🟢 ᴛᴜʀɴ ᴏɴ"
         flip_status = "off" if new_status == "on" else "on"
 
         await query.message.edit_text(
-            f"<b>⚙️ Shortener Settings</b>\n\nCurrent Status: {status_text}",
+            f"<b>⚙️ sʜᴏʀᴛᴇɴᴇʀ sᴇᴛᴛɪɴɢs</b>\n\nCurrent Status: {status_text}",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton(toggle_text, callback_data=f"shortener_toggle_{flip_status}")],
-                [InlineKeyboardButton("🔑 Set API & URL", callback_data="shortener_setapi")],
+                [InlineKeyboardButton("🔑 sᴇᴛ ᴀᴘɪ & ᴜʀʟ", callback_data="shortener_setapi")],
                 [InlineKeyboardButton("‹ ʙᴀᴄᴋ", callback_data="start")]
             ])
         )
@@ -154,7 +154,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
         pending_shortener_input[query.from_user.id] = True
         await query.message.edit_text(
-            "<b>🔑 Send your Shortener URL and API Key in one message, space se separate karke:</b>\n\n"
+            "<b>🔑 sᴇɴᴅ ʏᴏᴜʀ sʜᴏʀᴛᴇɴᴇʀ ᴜʀʟ ᴀɴᴅ ᴀᴘɪ ᴋᴇʏ ɪɴ ᴏɴᴇ ᴍsssᴀɢᴇ, sᴘᴀᴄᴇ sᴇ sᴇᴘᴀʀᴀᴛᴇ ᴋᴀʀᴋᴇ:</b>\n\n"
             "<code>yourdomain.com your_api_key</code>\n\n"
             "Example:\n<code>adrinolinks.in 8f2b91xyz</code>",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("‹ ᴄᴀɴᴄᴇʟ", callback_data="shortener_menu")]])
