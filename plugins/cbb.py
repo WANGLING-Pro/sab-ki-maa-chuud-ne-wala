@@ -87,13 +87,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 f"<i>(tap to copy instantly)</i>\n\n"
                 f"✅ Pay → 📸 Send screenshot → ⚡ Get instant activation\n\n"
                 f"🎯 Want a custom plan? Just ping the admin below.\n\n"
-                f"🚨 <i>Limited slots available — don't miss out!</i>"
+                f"🚨 <i>Seats are LIMITED for Premium Members – Grab Yours Now!</i>"
             ),
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("👨‍💼 Talk to Admin", url=SCREENSHOT_URL),
-                        InlineKeyboardButton("📢 Join Channel", url=MAIN_CHANNEL_URL)
+                        InlineKeyboardButton("⎯⎯꯭̽ །͠𝛐͢ꪎ᪳̑𝛊𝐜꯭̈⎯꯭̽❥", url=SCREENSHOT_URL),
+                        InlineKeyboardButton("• ᴘᴏʀɴ ᴡᴏʀʟᴅ", url=MAIN_CHANNEL_URL)
                     ]
                 ]
             )
