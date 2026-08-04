@@ -105,7 +105,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             except Exception:
                 pass
 
-        asyncio.create_task(_auto_delete(sent_msg, 120))
+        asyncio.create_task(_auto_delete(sent_msg, 20))
 
 
     elif data == "shortener_menu":
