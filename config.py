@@ -16,7 +16,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 #-------------------------------------------------------#
-MSG_EFFECT = 5104841245755180586
+MSG_EFFECT = 5046509860389126442
 #-------------------------------------------------------#
 #Bot token @Botfather
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8154426339:")
