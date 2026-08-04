@@ -92,13 +92,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("⎯⎯꯭̽ །͠𝛐͢ꪎ᪳̑𝛊𝐜꯭̈⎯꯭̽❥", url=SCREENSHOT_URL),
+                        InlineKeyboardButton("⎯⎯꯭̽ །͠𝛐͢ꪎ᪳̑𝛊𝐜꯭̈⎯꯭̽❥", url=SCREENSHOT_URL),
                         InlineKeyboardButton("• ᴘᴏʀɴ ᴡᴏʀʟᴅ", url=MAIN_CHANNEL_URL)
                     ]
                 ]
-            )
-        ),
-            message_effect_id=MSG_EFFECT
+            ),
+            message_effect_id=5046509860389126442
         )
 
         async def _auto_delete(msg, delay):
