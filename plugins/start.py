@@ -614,7 +614,8 @@ async def list_premium(client: Client, message: Message):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
 
     try:
-        from datetime import timezone as dt_tz
+        from datetime import datetime, timezone as dt_tz
+
         now_utc = datetime.now(dt_tz.utc)
 
         try:
@@ -627,21 +628,53 @@ async def list_premium(client: Client, message: Message):
 
         final = []
 
-        for user in users_list:
-            uid = user.get("user_id")
-            exp_data = user.get("expiration_timestamp") or user.get("expire_date") or user.get("expires")
-            if not uid or not exp_data:
-                continue
-
-            exp_dt = None
+        def parse_exp_date(exp_data):
             if isinstance(exp_data, datetime):
-                exp_dt = exp_data
-            elif isinstance(exp_data, str):
+                return exp_data
+            if isinstance(exp_data, (int, float)):
+                return datetime.fromtimestamp(exp_data, tz=dt_tz.utc)
+            if isinstance(exp_data, str):
+                clean_str = exp_data.replace(" UTC", "").strip()
+                
                 try:
-                    exp_dt = datetime.fromisoformat(exp_data)
+                    return datetime.fromisoformat(clean_str)
                 except Exception:
                     pass
+                
+                formats = [
+                    "%d-%m-%Y %I:%M:%S %p",
+                    "%d-%m-%Y %H:%M:%S",
+                    "%Y-%m-%d %H:%M:%S",
+                    "%Y-%m-%d %I:%M:%S %p",
+                    "%d/%m/%Y %H:%M:%S",
+                    "%d/%m/%Y %I:%M:%S %p",
+                    "%d-%m-%Y",
+                    "%Y-%m-%d"
+                ]
+                for fmt in formats:
+                    try:
+                        return datetime.strptime(clean_str, fmt)
+                    except Exception:
+                        pass
+            return None
 
+        for user in users_list:
+            uid = user.get("user_id") or user.get("_id") or user.get("id")
+            if not uid or str(uid) in ["ADMINS", "timer", "shortener"]:
+                continue
+
+            exp_data = (
+                user.get("expiration_timestamp")
+                or user.get("expire_date")
+                or user.get("expires")
+                or user.get("expiry")
+                or user.get("expires_at")
+            )
+
+            if not exp_data:
+                continue
+
+            exp_dt = parse_exp_date(exp_data)
             if not exp_dt:
                 continue
 
@@ -652,7 +685,7 @@ async def list_premium(client: Client, message: Message):
 
             if remain_seconds <= 0:
                 try:
-                    await collection.delete_one({"user_id": uid})
+                    await collection.delete_one({"_id": user.get("_id")})
                 except Exception:
                     pass
                 continue
@@ -660,7 +693,7 @@ async def list_premium(client: Client, message: Message):
             days = int(remain_seconds // 86400)
             hours = int((remain_seconds % 86400) // 3600)
             minutes = int((remain_seconds % 3600) // 60)
-            
+
             time_left = ""
             if days > 0:
                 time_left += f"{days}d "
@@ -669,7 +702,7 @@ async def list_premium(client: Client, message: Message):
             time_left += f"{minutes}m"
 
             try:
-                u = await client.get_users(uid)
+                u = await client.get_users(int(uid))
                 first_name = u.first_name if u.first_name else "User"
                 user_link = f"<a href='tg://user?id={uid}'>{first_name}</a>"
             except Exception:
