@@ -568,14 +568,14 @@ async def add_premium_user_command(client: Client, msg: Message):
         expires = await add_premium(user_id, value, unit)
 
         await pro.edit(
-            f"<b><blockquote>✅ Premium added successfully!\n\n👤 User ID: <code>{user_id}</code>\n⏱ Duration: {value}{unit}\n📅 Expires: <code>{expires}</code></blockquote></b>",
+            f"<b><blockquote>✅ ᴘʀᴇᴍɪᴜᴍ ᴀᴅᴅᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ!\n\n👤 ᴜsᴇʀ ɪᴅ: <code>{user_id}</code>\n⏱ ᴅᴜʀᴀᴛɪᴏɴ: {value}{unit}\n📅 ᴇxᴘɪʀᴇs: <code>{expires}</code></blockquote></b>",
             reply_markup=reply_markup
         )
 
         try:
             await client.send_message(
                 user_id,
-                f"<b>🎉 Premium Activated!</b>\n\n<b>Duration:</b> {value}{unit}\n<b>Expires:</b> <code>{expires}</code>"
+                f"<b><blockquote>🎉 ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>\n\n<b>ᴅᴜʀᴀᴛɪᴏɴ:</b> {value}{unit}\n<b>ᴇxᴘɪʀᴇs:</b> <code>{expires}</code></blockquote></b>"
             )
         except Exception:
             pass
@@ -715,7 +715,7 @@ async def list_premium(client: Client, message: Message):
         if not final:
             await pro.edit("<b><blockquote>❌ No active premium users found.</blockquote></b>", reply_markup=reply_markup)
         else:
-            text = "<b>⚡ Active Premium Users List:</b>\n\n" + "\n".join(final)
+            text = "<b>⚡ ᴀᴄᴛɪᴠᴇ ᴘʀᴇᴍɪᴜᴍ ᴜsᴇʀs ʟɪsᴛ:</b>\n\n" + "\n".join(final)
             if len(text) > 4000:
                 text = text[:3900] + "\n\n<b>...and more users</b>"
             await pro.edit(text, reply_markup=reply_markup)
@@ -732,7 +732,7 @@ async def count_cmd(client: Client, message: Message):
     try:
         c = await db.get_total_verify_count()
         await pro.edit(
-            f"<b><blockquote>📊 Total Verified Tokens Today: <code>{c}</code></blockquote></b>",
+            f"<b><blockquote>📊 ᴛᴏᴛᴀʟ ᴠᴇʀɪғɪᴇᴅ ᴛᴏᴋᴇɴs ᴛᴏᴅᴀʏ: <code>{c}</code></blockquote></b>",
             reply_markup=reply_markup
         )
     except Exception as e:
