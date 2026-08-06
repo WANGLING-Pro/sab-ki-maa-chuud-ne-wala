@@ -534,17 +534,107 @@ async def get_admins(client: Client, message: Message):
 
 # ================= PREMIUM COMMANDS =================
 
-@Bot.on_message(filters.command('myplan') & filters.private)
-async def check_plan_cmd(client: Client, message: Message):
+@Bot.on_message(filters.command(['myplan', 'plan']) & filters.private)
+async def my_plan(client: Client, message: Message):
+    user_id = message.from_user.id
     pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>", quote=True)
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
 
     try:
-        user_id = message.from_user.id
-        status = await check_user_plan(user_id)
-        await pro.edit(f"<b><blockquote>{status}</blockquote></b>", reply_markup=reply_markup)
+        from datetime import datetime, timezone as dt_tz
+
+        # Fetch user from collection/database
+        user = None
+        try:
+            user = await collection.find_one({"user_id": user_id})
+        except Exception:
+            try:
+                user = await db.col.find_one({"user_id": user_id})
+            except Exception:
+                user = await db.users.find_one({"user_id": user_id})
+
+        if not user:
+            return await pro.edit("<b><blockquote>❌ ʏᴏᴜ..👀 ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴀɴ ᴀᴄᴛɪᴠᴇ ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴ😿.</blockquote></b>", reply_markup=reply_markup)
+
+        exp_data = (
+            user.get("expiration_timestamp")
+            or user.get("expire_date")
+            or user.get("expires")
+            or user.get("expiry")
+            or user.get("expires_at")
+        )
+
+        if not exp_data:
+            return await pro.edit("<b><blockquote>❌ ʏᴏᴜ ᴀʀᴇ ᴄᴜʀʀᴇɴᴛʟʏ ᴏɴ ᴀ ғʀᴇᴇ ᴘʟᴀɴ...😇</blockquote></b>", reply_markup=reply_markup)
+
+        def parse_exp_date(exp_data):
+            if isinstance(exp_data, datetime):
+                return exp_data
+            if isinstance(exp_data, (int, float)):
+                return datetime.fromtimestamp(exp_data, tz=dt_tz.utc)
+            if isinstance(exp_data, str):
+                clean_str = exp_data.replace(" UTC", "").strip()
+                try:
+                    return datetime.fromisoformat(clean_str)
+                except Exception:
+                    pass
+                formats = [
+                    "%d-%m-%Y %I:%M:%S %p",
+                    "%d-%m-%Y %H:%M:%S",
+                    "%Y-%m-%d %H:%M:%S",
+                    "%Y-%m-%d %I:%M:%S %p",
+                    "%d/%m/%Y %H:%M:%S",
+                    "%d/%m/%Y %I:%M:%S %p",
+                    "%d-%m-%Y",
+                    "%Y-%m-%d"
+                ]
+                for fmt in formats:
+                    try:
+                        return datetime.strptime(clean_str, fmt)
+                    except Exception:
+                        pass
+            return None
+
+        exp_dt = parse_exp_date(exp_data)
+        if not exp_dt:
+            return await pro.edit("<b><blockquote>❌ ʏᴏᴜ..👀 ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴀɴ ᴀᴄᴛɪᴠᴇ ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴ😿.</blockquote></b>", reply_markup=reply_markup)
+
+        if exp_dt.tzinfo is None:
+            exp_dt = exp_dt.replace(tzinfo=dt_tz.utc)
+
+        now_utc = datetime.now(dt_tz.utc)
+        remain_seconds = (exp_dt - now_utc).total_seconds()
+
+        if remain_seconds <= 0:
+            return await pro.edit("<b><blockquote>❌ ʏᴏᴜʀ ᴘʟᴀɴ ʜᴀs ᴇxᴘɪʀᴇᴅ!</blockquote></b>", reply_markup=reply_markup)
+
+        days = int(remain_seconds // 86400)
+        hours = int((remain_seconds % 86400) // 3600)
+        minutes = int((remain_seconds % 3600) // 60)
+
+        time_left = ""
+        if days > 0:
+            time_left += f"{days}d "
+        if hours > 0 or days > 0:
+            time_left += f"{hours}h "
+        time_left += f"{minutes}m"
+
+        exp_str = exp_dt.strftime("%d-%m-%Y %I:%M:%S %p UTC")
+
+        text = (
+            f"<b>📊 ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴ ᴅᴇᴛᴀɪʟs:</b>\n\n"
+            f"<b>👤 ᴜsᴇʀ:</b> {message.from_user.mention}\n"
+            f"<b>🆔 ᴜsᴇʀ ɪᴅ:</b> <code>{user_id}</code>\n"
+            f"<b>⚡ sᴛᴀᴛᴜs:</b> <code>ᴀᴄᴛɪᴠᴇ ᴘʀᴇᴍɪᴜᴍ ᴜsᴇʀ</code>\n"
+            f"<b>⏳ ʀᴇᴍᴀɪɴɪɴɢ ᴛɪᴍᴇ:</b> <code>{time_left}</code>\n"
+            f"<b>📅 ᴇxᴘɪʀᴀᴛɪᴏɴ ᴅᴀᴛᴇ:</b> <code>{exp_str}</code>"
+        )
+
+        await pro.edit(text, reply_markup=reply_markup)
+
     except Exception as e:
         await pro.edit(f"<b>❌ Error occurred:</b> <code>{str(e)}</code>", reply_markup=reply_markup)
+
 
 
 @Bot.on_message(filters.command('addpremium') & filters.private & admin)
