@@ -608,49 +608,65 @@ async def remove_premium_cmd(client: Client, msg: Message):
     except Exception as e:
         await pro.edit(f"<b>❌ Error occurred:</b> <code>{str(e)}</code>", reply_markup=reply_markup)
 
-
 @Bot.on_message(filters.command('premium_users') & filters.private & admin)
 async def list_premium(client: Client, message: Message):
     pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>", quote=True)
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
 
     try:
-        ist = timezone("Asia/Kolkata")
-        now = datetime.now(ist)
+        from datetime import timezone as dt_tz
+        now_utc = datetime.now(dt_tz.utc)
 
         try:
-            users_cursor = collection.find({})
-        except NameError:
-            users_cursor = db.col.find({}) if hasattr(db, 'col') else db.users.find({})
+            users_list = await collection.find({}).to_list(length=None)
+        except Exception:
+            try:
+                users_list = await db.col.find({}).to_list(length=None)
+            except Exception:
+                users_list = await db.users.find({}).to_list(length=None)
 
         final = []
 
-        async for user in users_cursor:
+        for user in users_list:
             uid = user.get("user_id")
-            if not uid:
+            exp_data = user.get("expiration_timestamp") or user.get("expire_date") or user.get("expires")
+            if not uid or not exp_data:
                 continue
 
-            exp_str = user.get("expiration_timestamp")
-            if not exp_str:
+            exp_dt = None
+            if isinstance(exp_data, datetime):
+                exp_dt = exp_data
+            elif isinstance(exp_data, str):
+                try:
+                    exp_dt = datetime.fromisoformat(exp_data)
+                except Exception:
+                    pass
+
+            if not exp_dt:
                 continue
 
-            try:
-                exp = datetime.fromisoformat(exp_str).astimezone(ist)
-            except Exception:
-                continue
+            if exp_dt.tzinfo is None:
+                exp_dt = exp_dt.replace(tzinfo=dt_tz.utc)
 
-            remain = exp - now
-            if remain.total_seconds() <= 0:
+            remain_seconds = (exp_dt - now_utc).total_seconds()
+
+            if remain_seconds <= 0:
                 try:
                     await collection.delete_one({"user_id": uid})
                 except Exception:
                     pass
                 continue
 
-            days = remain.days
-            hours = remain.seconds // 3600
-            minutes = (remain.seconds // 60) % 60
-            time_left = f"{days}d {hours}h {minutes}m"
+            days = int(remain_seconds // 86400)
+            hours = int((remain_seconds % 86400) // 3600)
+            minutes = int((remain_seconds % 3600) // 60)
+            
+            time_left = ""
+            if days > 0:
+                time_left += f"{days}d "
+            if hours > 0 or days > 0:
+                time_left += f"{hours}h "
+            time_left += f"{minutes}m"
 
             try:
                 u = await client.get_users(uid)
