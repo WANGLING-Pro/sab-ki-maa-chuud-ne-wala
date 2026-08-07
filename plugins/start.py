@@ -364,6 +364,9 @@ async def start_command(client: Client, message: Message):
         FILE_DEL = await db.get_del_timer()
 
         if FILE_DEL and FILE_DEL > 0 and sent_msgs:
+            bot_username = client.me.username if hasattr(client, "me") and client.me and client.me.username else "bot"
+            start_link = f"https://t.me/{bot_username}?start={basic}"
+
             note = await message.reply(
                 f"<b>File will be deleted in {get_exp_time(FILE_DEL)}</b>"
             )
@@ -376,8 +379,17 @@ async def start_command(client: Client, message: Message):
                 except Exception:
                     pass
 
+            get_again_markup = InlineKeyboardMarkup([
+                [InlineKeyboardButton("GET FILE AGAIN!", url=start_link)]
+            ])
+
+            delete_text = (
+                "<b>YOUR VIDEO / FILE IS SUCCESSFULLY DELETED !!</b>\n\n"
+                "<b>CLICK BELOW BUTTON TO GET YOUR DELETED VIDEO / FILE 👇</b>"
+            )
+
             try:
-                await note.edit("File deleted.")
+                await note.edit_text(delete_text, reply_markup=get_again_markup)
             except Exception:
                 pass
 
@@ -543,7 +555,6 @@ async def my_plan(client: Client, message: Message):
     try:
         from datetime import datetime, timezone as dt_tz
 
-        # Fetch user from collection/database
         user = None
         try:
             user = await collection.find_one({"user_id": user_id})
@@ -636,7 +647,6 @@ async def my_plan(client: Client, message: Message):
         await pro.edit(f"<b>❌ Error occurred:</b> <code>{str(e)}</code>", reply_markup=reply_markup)
 
 
-
 @Bot.on_message(filters.command('addpremium') & filters.private & admin)
 async def add_premium_user_command(client: Client, msg: Message):
     pro = await msg.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>", quote=True)
@@ -698,6 +708,7 @@ async def remove_premium_cmd(client: Client, msg: Message):
     except Exception as e:
         await pro.edit(f"<b>❌ Error occurred:</b> <code>{str(e)}</code>", reply_markup=reply_markup)
 
+
 @Bot.on_message(filters.command('premium_users') & filters.private & admin)
 async def list_premium(client: Client, message: Message):
     pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>", quote=True)
@@ -725,12 +736,12 @@ async def list_premium(client: Client, message: Message):
                 return datetime.fromtimestamp(exp_data, tz=dt_tz.utc)
             if isinstance(exp_data, str):
                 clean_str = exp_data.replace(" UTC", "").strip()
-                
+
                 try:
                     return datetime.fromisoformat(clean_str)
                 except Exception:
                     pass
-                
+
                 formats = [
                     "%d-%m-%Y %I:%M:%S %p",
                     "%d-%m-%Y %H:%M:%S",
@@ -841,4 +852,5 @@ async def admin_cmd(client: Client, message: Message):
     except Exception as e:
         await message.reply(f"<b>❌ Error occurred:</b> <code>{str(e)}</code>", quote=True)
 
-# ================= END =================
+
+#==============================~~~ The End ~~~===========#
