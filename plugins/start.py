@@ -368,7 +368,7 @@ async def start_command(client: Client, message: Message):
             start_link = f"https://t.me/{bot_username}?start={basic}"
 
             note = await message.reply(
-                f"<b><blockquote>File will be deleted in {get_exp_time(FILE_DEL)}</blockquote></b>"
+                f"<b><blockquote>ᴛʜɪs ᴠɪᴅᴇᴏ / ғɪʟᴇ ɪs ᴅᴇʟᴇᴛɪɴɢ ᴀᴜᴛᴏᴍᴛɪᴄᴀʟʟʏ ɪɴ {get_exp_time(FILE_DEL)}ғᴏʀᴡᴀʀᴅ ɪɴ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs..!</blockquote></b>"
             )
 
             await asyncio.sleep(FILE_DEL)
@@ -380,7 +380,7 @@ async def start_command(client: Client, message: Message):
                     pass
 
             get_again_markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton("GET FILE AGAIN!", url=start_link)]
+                [InlineKeyboardButton("ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇ ᴀɢᴀɪɴ...⚡", url=start_link)]
             ])
 
             delete_text = (
