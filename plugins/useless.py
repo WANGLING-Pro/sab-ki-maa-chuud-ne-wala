@@ -56,29 +56,33 @@ async def set_delete_time(client: Bot, message: Message):
         if len(message.command) < 2:
             return await message.reply_text(
                 "<b>⚠️ Usage:</b> <code>/dlt_time <seconds></code>\n"
-                "<b>Example:</b> <code>/dlt_time 300</code> (for 5 mins)",
+                "<b>Example:</b> <code>/dlt_time 300</code> (or <code>0</code> to turn OFF)",
                 quote=True
             )
 
         duration = int(message.command[1])
 
-        if duration <= 0:
-            return await message.reply_text("❌ <b>Duration must be greater than 0 seconds.</b>", quote=True)
+        if duration < 0:
+            return await message.reply_text("❌ <b>Duration cannot be negative.</b>", quote=True)
 
         await db.set_del_timer(duration)
 
-        readable_time = get_readable_time(duration) if 'get_readable_time' in globals() else f"{duration} seconds"
-
-        await message.reply_text(
-            f"✅ <b>Delete Timer updated successfully!</b>\n\n"
-            f"<blockquote><b>New Duration:</b> <code>{duration} seconds</code> ({readable_time})</blockquote>",
-            quote=True
-        )
+        if duration == 0:
+            await message.reply_text(
+                "✅ <b>Auto-Delete has been turned OFF successfully!</b>",
+                quote=True
+            )
+        else:
+            readable_time = get_readable_time(duration) if 'get_readable_time' in globals() else f"{duration} seconds"
+            await message.reply_text(
+                f"✅ <b>Delete Timer updated successfully!</b>\n\n"
+                f"<blockquote><b>New Duration:</b> <code>{duration} seconds</code> ({readable_time})</blockquote>",
+                quote=True
+            )
 
     except ValueError:
         await message.reply_text(
-            "<b>❌ Invalid number! Please provide time in seconds as an integer.</b>\n"
-            "<b>Usage:</b> <code>/dlt_time 60</code>",
+            "<b>❌ Invalid number! Please provide time in seconds.</b>",
             quote=True
         )
     except Exception as e:
