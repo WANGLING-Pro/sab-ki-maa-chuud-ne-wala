@@ -368,7 +368,7 @@ async def start_command(client: Client, message: Message):
             start_link = f"https://t.me/{bot_username}?start={basic}"
 
             note = await message.reply(
-                f"<b>File will be deleted in {get_exp_time(FILE_DEL)}</b>"
+                f"<b><blockquote>File will be deleted in {get_exp_time(FILE_DEL)}</blockquote></b>"
             )
 
             await asyncio.sleep(FILE_DEL)
@@ -384,8 +384,8 @@ async def start_command(client: Client, message: Message):
             ])
 
             delete_text = (
-                "<b>YOUR VIDEO / FILE IS SUCCESSFULLY DELETED !!</b>\n\n"
-                "<b>CLICK BELOW BUTTON TO GET YOUR DELETED VIDEO / FILE 👇</b>"
+                "<b><blockquote>ʏᴏᴜʀ ᴠᴜᴅᴇᴏ / ғɪʟᴇ ɪs sᴜᴄᴄᴇssғᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!</blockquote></b>\n\n"
+                "<b><blockquote>ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ғɪʟᴇ...👇🏻</blockquote></b>"
             )
 
             try:
