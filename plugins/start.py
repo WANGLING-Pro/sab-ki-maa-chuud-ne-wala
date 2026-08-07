@@ -368,7 +368,7 @@ async def start_command(client: Client, message: Message):
             start_link = f"https://t.me/{bot_username}?start={basic}"
 
             note = await message.reply(
-                f"<b><blockquote>ᴛʜɪs ᴠɪᴅᴇᴏ / ғɪʟᴇ ɪs ᴅᴇʟᴇᴛɪɴɢ ᴀᴜᴛᴏᴍᴛɪᴄᴀʟʟʏ ɪɴ {get_exp_time(FILE_DEL)}ғᴏʀᴡᴀʀᴅ ɪɴ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs..!</blockquote></b>"
+                f"<b><blockquote>ᴛʜɪs ᴠɪᴅᴇᴏ / ғɪʟᴇ ɪs ᴅᴇʟᴇᴛɪɴɢ ᴀᴜᴛᴏᴍᴛɪᴄᴀʟʟʏ ɪɴ {get_exp_time(FILE_DEL)}. ғᴏʀᴡᴀʀᴅ ɪɴ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs..!</blockquote></b>"
             )
 
             await asyncio.sleep(FILE_DEL)
